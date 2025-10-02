@@ -86,6 +86,7 @@ Contracts
 
 Storage (packed)
 
+```
 struct Position {
   address owner;
   address beneficiary;
@@ -115,7 +116,7 @@ System Limits (DoS protection)
 uint256 public maxPositionsPerUser = 10;
 uint256 public maxGlobalPositions  = 10_000 (ramp gradually);
 uint256 public minPositionSizeUsd  = 100e6 (USDC 6dp) // enforce via oracle
-
+```
 
 ⸻
 
@@ -160,6 +161,7 @@ Accounting
 
 FeeConfig
 
+```
 struct FeeConfig {
   uint16  protocolFeeBps;         // default 20 bps
   uint256 executionFeeFixedWei;   // base keeper fee
@@ -168,6 +170,7 @@ struct FeeConfig {
   uint16  referralFeeBpsDefault;  // share of protocolFee
 }
 mapping(address referrer => uint16 customBps); // optional overrides
+```
 
 	•	Keeper incentives:
 	•	Chainlink/Gelato paid from exec fee.
@@ -204,6 +207,7 @@ Core Events
 
 ExecutionDetails (extended telemetry)
 
+```
 event ExecutionDetails(
   uint256 indexed positionId,
   address keeper,
@@ -213,6 +217,7 @@ event ExecutionDetails(
   uint256 twapWindow,
   uint256 oracleTimestamp
 );
+```
 
 	•	Subgraph metrics: notional traded, avg execution vs TWAP, skip rate, fee take, success rate, per-venue split.
 
@@ -271,6 +276,7 @@ event ExecutionDetails(
 
 13) Clean ABI (final)
 
+```
 function createPosition(CreateParams calldata p) external returns (uint256 id);
 function deposit(uint256 id, address token, uint256 amt) external;
 function withdraw(uint256 id, address token, uint256 amt, address to) external;
@@ -288,8 +294,8 @@ function quoteNext(uint256 id) external view returns (TradeQuote memory);
 function estimateTotalCost(CreateParams calldata p) external view returns (FeeEstimate memory);
 
 function checkLiquidity(uint256 id) external view
-  returns (bool hasLiquidity, uint256 expectedSlippageBps, bytes memory optimalPath);
-
+returns (bool hasLiquidity, uint256 expectedSlippageBps, bytes memory optimalPath);
+```
 
 ⸻
 
@@ -417,11 +423,14 @@ Bootstrap commands (if you want a head start)
 pnpm create next-app@latest dca-web --ts --eslint --tailwind
 
 # Add core deps
+
+```
 pnpm add wagmi viem @rainbow-me/rainbowkit
 pnpm add @tanstack/react-query zod react-hook-form
 pnpm add @tanstack/react-table recharts date-fns
 pnpm add class-variance-authority clsx lucide-react
 pnpm add @safe-global/safe-apps-sdk
+```
 
 # Dev/testing
 pnpm add -D vitest @testing-library/react @types/node @types/react
