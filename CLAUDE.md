@@ -6,17 +6,38 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a Bitcoin and Ethereum Dollar Cost Averaging (DCA) application. The repository is currently in its initial state with minimal structure.
 
-## Repository Structure
+## Project Repository Structure
 
-This is a fresh repository with:
-- A basic README.md describing it as "DCA for Bitcoin and Ethereum"
-- Claude Code settings in `.claude/settings.local.json` with bash grep permissions
-- Git initialized with an initial commit
+apps/web/
+  app/
+    (public)/         # marketing/docs pages (SSR/ISR)
+    dashboard/        # protected console (SPA/RSC compliant)
+      positions/
+      create/
+      settings/
+    api/              # minimal server routes if needed
+  components/
+    forms/            # RHF + zod schemas
+    charts/
+    tables/
+    web3/
+  lib/
+    abis/
+    wagmi.ts          # client, chains, transports
+    viem.ts
+    subgraph.ts
+    formatters.ts     # amounts, prices, bps
+    guards.ts         # client-side validation mirrors
+  styles/
+  tests/
+packages/
+  ui/                 # shared design system tokens/components
+  config/             # eslint, tsconfig, tailwind presets
 
 # Bitcoin DCA on Ethereum — Merged Requirements (v0.3)
 
 0) Goals & Scope
-	•	Goal: Non-custodial automated DCA to buy/sell WBTC on daily/weekly/monthly cadence using USDC (default) or other supported tokens.
+	•	Goal: Non-custodial automated DCA to buy/sell WBTC on daily/weekly/monthly cadence using USDC (default) or other supported stable tokens (like USDT, DAI etc).
 	•	Venues: AUTO routing (Uniswap v3 ↔ CoW ↔ 1inch) with MEV protection.
 	•	Automation: Chainlink Automation primary; Gelato fallback; optional public execution with tip after a grace window.
 	•	Security posture: Long TWAP, multi-oracle checks, strict slippage, circuit breakers, position/volume limits.
@@ -44,6 +65,8 @@ Manage Position
 ⸻
 
 2) Smart Contract Architecture
+
+NOTE: For the smart contract, if there are any re-usable contract or library from https://docs.openzeppelin.com/contracts , please choose it.
 
 Contracts
 	1.	DcaManager (UUPS)
@@ -330,37 +353,6 @@ Why this stack fits a DCA dApp
 	•	SSR where it matters: marketing/docs/FAQ render fast; app console runs as SPA for wallet flows.
 	•	Type safety: zod + viem ABI types catch unit/decimals mistakes (USDC 6dp vs WBTC 8dp) before they hit mainnet users.
 	•	Composable UX: shadcn/ui + Tailwind let you ship a crisp, pro console quickly (strategy wizard, dashboards, CSV export).
-
-⸻
-
-Suggested app structure
-
-apps/web/
-  app/
-    (public)/         # marketing/docs pages (SSR/ISR)
-    dashboard/        # protected console (SPA/RSC compliant)
-      positions/
-      create/
-      settings/
-    api/              # minimal server routes if needed
-  components/
-    forms/            # RHF + zod schemas
-    charts/
-    tables/
-    web3/
-  lib/
-    abis/
-    wagmi.ts          # client, chains, transports
-    viem.ts
-    subgraph.ts
-    formatters.ts     # amounts, prices, bps
-    guards.ts         # client-side validation mirrors
-  styles/
-  tests/
-packages/
-  ui/                 # shared design system tokens/components
-  config/             # eslint, tsconfig, tailwind presets
-
 
 ⸻
 
