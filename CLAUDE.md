@@ -8,6 +8,7 @@ This is a Bitcoin and Ethereum Dollar Cost Averaging (DCA) application. The repo
 
 ## Project Repository Structure
 
+```
 apps/web/
   app/
     (public)/         # marketing/docs pages (SSR/ISR)
@@ -33,6 +34,7 @@ apps/web/
 packages/
   ui/                 # shared design system tokens/components
   config/             # eslint, tsconfig, tailwind presets
+```
 
 # Bitcoin DCA on Ethereum — Merged Requirements (v0.3)
 
