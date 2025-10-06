@@ -8,114 +8,114 @@ This document provides a comprehensive architecture overview of the Bitcoin DCA 
 graph TB
     %% User Layer
     subgraph "User Interface"
-        UI[Next.js Frontend]
-        Wallet[Wallet Integration<br/>RainbowKit/wagmi]
-        Safe[Safe App Mode<br/>Multisig Support]
+        UI["Next.js Frontend"]
+        Wallet["Wallet Integration<br/>RainbowKit/wagmi"]
+        Safe["Safe App Mode<br/>Multisig Support"]
     end
 
     %% Smart Contract Layer
     subgraph "Smart Contract Layer"
         subgraph "Core Contracts"
-            DCA[DcaManager<br/>UUPS Upgradeable<br/>- Position Management<br/>- Balance Tracking<br/>- Authorization]
-            NFT[PositionNFT<br/>ERC-721<br/>- Position Metadata<br/>- Ownership Tracking]
-            Storage[PositionStorage<br/>Upgradeable Storage<br/>- Position Data<br/>- Balance Mappings]
+            DCA["DcaManager<br/>UUPS Upgradeable<br/>Position Management<br/>Balance Tracking<br/>Authorization"]
+            NFT["PositionNFT<br/>ERC-721<br/>Position Metadata<br/>Ownership Tracking"]
+            Storage["PositionStorage<br/>Upgradeable Storage<br/>Position Data<br/>Balance Mappings"]
         end
         
         subgraph "Execution Layer"
-            Exec[Executor<br/>- Keeper Entrypoint<br/>- Guard Enforcement<br/>- Route Selection<br/>- Accounting Updates]
-            Router[Router Adapters]
-            UniV3[UniV3Adapter<br/>- Flashbots Support<br/>- Private Transactions]
-            COW[CoWAdapter<br/>- Partial Fills<br/>- MEV Protection]
-            OneInch[OneInchAdapter<br/>- Fallback Routing]
+            Exec["Executor<br/>Keeper Entrypoint<br/>Guard Enforcement<br/>Route Selection<br/>Accounting Updates"]
+            Router["Router Adapters"]
+            UniV3["UniV3Adapter<br/>Flashbots Support<br/>Private Transactions"]
+            COW["CoWAdapter<br/>Partial Fills<br/>MEV Protection"]
+            OneInch["OneInchAdapter<br/>Fallback Routing"]
         end
         
         subgraph "Oracle & Pricing"
-            Oracle[PriceOracle<br/>- Chainlink Feeds<br/>- TWAP Utilities<br/>- Price Validation]
-            ChainlinkBTC[Chainlink BTC/USD]
-            ChainlinkETH[Chainlink ETH/USD]
-            ChainlinkUSDC[Chainlink USDC/USD]
-            ChainlinkWBTC[Chainlink WBTC/BTC]
+            Oracle["PriceOracle<br/>Chainlink Feeds<br/>TWAP Utilities<br/>Price Validation"]
+            ChainlinkBTC["Chainlink BTC/USD"]
+            ChainlinkETH["Chainlink ETH/USD"]
+            ChainlinkUSDC["Chainlink USDC/USD"]
+            ChainlinkWBTC["Chainlink WBTC/BTC"]
         end
         
         subgraph "Fee Management"
-            Treasury[Treasury<br/>2/3 Multisig<br/>Timelock<br/>- Fee Collection<br/>- Emergency Controls]
+            Treasury["Treasury<br/>2/3 Multisig<br/>Timelock<br/>Fee Collection<br/>Emergency Controls"]
         end
     end
 
     %% Keeper Infrastructure
     subgraph "Keeper Infrastructure"
         subgraph "Primary Keepers"
-            Chainlink[Chainlink Automation<br/>- checkUpkeep()<br/>- batchExecute()<br/>- Time-based Triggers]
+            Chainlink["Chainlink Automation<br/>checkUpkeep<br/>batchExecute<br/>Time-based Triggers"]
         end
         
         subgraph "Backup Keepers"
-            Gelato[Gelato Network<br/>- Mirrored Tasks<br/>- Fallback Execution]
-            Public[Public Execution<br/>- 6h Grace Period<br/>- Tip-based Incentives<br/>- Griefing Protection]
+            Gelato["Gelato Network<br/>Mirrored Tasks<br/>Fallback Execution"]
+            Public["Public Execution<br/>6h Grace Period<br/>Tip-based Incentives<br/>Griefing Protection"]
         end
     end
 
     %% Routing & DEX Layer
     subgraph "DEX & Routing Layer"
         subgraph "Auto Routing Logic"
-            Routing[Routing Engine<br/>- Notional Analysis<br/>- Slippage Estimation<br/>- Venue Selection]
+            Routing["Routing Engine<br/>Notional Analysis<br/>Slippage Estimation<br/>Venue Selection"]
         end
         
         subgraph "DEX Protocols"
-            UniswapV3[Uniswap V3<br/>- Multiple Fee Tiers<br/>- TWAP Calculations<br/>- Liquidity Depth]
-            CoWProtocol[CoW Protocol<br/>- Batch Auctions<br/>- MEV Protection<br/>- Partial Fills]
-            OneInchDEX[1inch Aggregator<br/>- Multi-DEX<br/>- Optimal Routes<br/>- Fallback Option]
+            UniswapV3["Uniswap V3<br/>Multiple Fee Tiers<br/>TWAP Calculations<br/>Liquidity Depth"]
+            CoWProtocol["CoW Protocol<br/>Batch Auctions<br/>MEV Protection<br/>Partial Fills"]
+            OneInchDEX["1inch Aggregator<br/>Multi-DEX<br/>Optimal Routes<br/>Fallback Option"]
         end
         
         subgraph "MEV Protection"
-            Flashbots[Flashbots<br/>Private Transactions<br/>MEV Protection]
+            Flashbots["Flashbots<br/>Private Transactions<br/>MEV Protection"]
         end
     end
 
     %% Data & Analytics
     subgraph "Data Layer"
         subgraph "On-chain Data"
-            Events[Contract Events<br/>- PositionCreated<br/>- Executed<br/>- ExecutionSkipped<br/>- ExecutionDetails]
+            Events["Contract Events<br/>PositionCreated<br/>Executed<br/>ExecutionSkipped<br/>ExecutionDetails"]
         end
         
         subgraph "Off-chain Data"
-            Subgraph[The Graph<br/>Subgraph<br/>- Position History<br/>- Execution Logs<br/>- Analytics Data]
-            Indexing[Graph Protocol<br/>Indexing<br/>- Real-time Updates<br/>- Historical Data]
+            Subgraph["The Graph<br/>Subgraph<br/>Position History<br/>Execution Logs<br/>Analytics Data"]
+            Indexing["Graph Protocol<br/>Indexing<br/>Real-time Updates<br/>Historical Data"]
         end
         
         subgraph "Analytics"
-            Metrics[Analytics Dashboard<br/>- Success Rates<br/>- Fee Tracking<br/>- Performance Metrics]
-            CSV[CSV Export<br/>- Transaction History<br/>- Cost Basis<br/>- Route Analysis]
+            Metrics["Analytics Dashboard<br/>Success Rates<br/>Fee Tracking<br/>Performance Metrics"]
+            CSV["CSV Export<br/>Transaction History<br/>Cost Basis<br/>Route Analysis"]
         end
     end
 
     %% External Services
     subgraph "External Services"
         subgraph "Infrastructure"
-            RPC[Ethereum RPC<br/>- Alchemy/Infura<br/>- Transaction Broadcasting]
-            IPFS[IPFS<br/>- NFT Metadata<br/>- Position Details]
+            RPC["Ethereum RPC<br/>Alchemy/Infura<br/>Transaction Broadcasting"]
+            IPFS["IPFS<br/>NFT Metadata<br/>Position Details"]
         end
         
         subgraph "Monitoring"
-            Sentry[Sentry<br/>Error Tracking<br/>Frontend Monitoring]
-            PostHog[PostHog<br/>Product Analytics<br/>User Behavior]
+            Sentry["Sentry<br/>Error Tracking<br/>Frontend Monitoring"]
+            PostHog["PostHog<br/>Product Analytics<br/>User Behavior"]
         end
         
         subgraph "Notifications"
-            EPNS[Push Protocol<br/>Execution Alerts<br/>User Notifications]
-            Webhook[Webhook Service<br/>Custom Notifications<br/>Integration Hooks]
+            EPNS["Push Protocol<br/>Execution Alerts<br/>User Notifications"]
+            Webhook["Webhook Service<br/>Custom Notifications<br/>Integration Hooks"]
         end
     end
 
     %% Circuit Breakers & Security
     subgraph "Security & Circuit Breakers"
         subgraph "Market Protections"
-            Breakers[Circuit Breakers<br/>- Daily Volume Limits<br/>- Price Movement Caps<br/>- Oracle Staleness]
-            Guards[Position Guards<br/>- Slippage Limits<br/>- Price Caps/Floors<br/>- Stable Depeg Checks]
+            Breakers["Circuit Breakers<br/>Daily Volume Limits<br/>Price Movement Caps<br/>Oracle Staleness"]
+            Guards["Position Guards<br/>Slippage Limits<br/>Price Caps/Floors<br/>Stable Depeg Checks"]
         end
         
         subgraph "Emergency Controls"
-            Pause[Emergency Pause<br/>- Global Pause<br/>- Asset-specific Pause<br/>- Venue-specific Pause]
-            Withdraw[Emergency Withdraw<br/>- 7-day Delay<br/>- Full Position Recovery<br/>- No In-flight Swaps]
+            Pause["Emergency Pause<br/>Global Pause<br/>Asset-specific Pause<br/>Venue-specific Pause"]
+            Withdraw["Emergency Withdraw<br/>7-day Delay<br/>Full Position Recovery<br/>No In-flight Swaps"]
         end
     end
 
