@@ -21,7 +21,7 @@ The project architecture refers to [architecture](./architecture.md)
 
 ## 1. Core User Flows
 
-@todo mermaid chart for user flows
+The user flows are referring to [here](./user-flow.md)
 
 ### Create Position (BUY or SELL)
 
