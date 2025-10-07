@@ -39,7 +39,7 @@ The user flows are referring to [here](./user-flow.md)
 - Deposit / Withdraw (idle balances & accumulated fills) anytime; permit2 supported.
 - Pause / Resume / Modify (modify only safe fields: slippage, venue, gas caps, guards, beneficiary).
 - Cancel (no more executions; withdraw remaining funds).
-- Emergency Withdraw (time-delayed; see §6.4).
+- Emergency Withdraw (time-delayed).
 
 ## 2. Smart Contract Architecture
 
@@ -412,3 +412,11 @@ https://browser-use.com/
 
 Hardhat
 Foundry
+
+# References
+
+- OpenZeppelin: https://www.openzeppelin.com/solidity-contracts
+- MEV protection: https://cow.fi/learn/understanding-mev-protection
+- Chainlink Automation primary: https://docs.chain.link/chainlink-functions/tutorials/automate-functions
+- Gelato fallback: https://docs.gelato.cloud/vrf/how-to-guides/create-a-fallback-vrf
+- 
