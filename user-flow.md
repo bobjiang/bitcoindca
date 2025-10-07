@@ -40,74 +40,74 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    Start([User Wants to Create Position]) --> Step1[Step 1: Direction & Asset Selection]
+    Start([User Wants to Create Position]) --> Step1["Step 1: Direction & Asset Selection"]
     
-    Step1 --> Direction{Direction Selection}
-    Direction -->|BUY| BuyFlow[BUY: Quote Token → WBTC]
-    Direction -->|SELL| SellFlow[SELL: WBTC → Quote Token]
+    Step1 --> Direction{"Direction Selection"}
+    Direction -->|BUY| BuyFlow["BUY: Quote Token → WBTC"]
+    Direction -->|SELL| SellFlow["SELL: WBTC → Quote Token"]
     
-    BuyFlow --> Amount1[Select Amount per Period<br/>Quote tokens or USD equivalent]
-    SellFlow --> Amount2[Select Amount per Period<br/>WBTC units or USD equivalent]
+    BuyFlow --> Amount1["Select Amount per Period<br/>Quote tokens or USD equivalent"]
+    SellFlow --> Amount2["Select Amount per Period<br/>WBTC units or USD equivalent"]
     
-    Amount1 --> Step2[Step 2: Cadence & Schedule]
+    Amount1 --> Step2["Step 2: Cadence & Schedule"]
     Amount2 --> Step2
     
-    Step2 --> Frequency{Frequency Selection}
-    Frequency -->|Daily| Daily[Daily Cadence]
-    Frequency -->|Weekly| Weekly[Weekly Cadence]
-    Frequency -->|Monthly| Monthly[Monthly Cadence]
+    Step2 --> Frequency{"Frequency Selection"}
+    Frequency -->|Daily| Daily["Daily Cadence"]
+    Frequency -->|Weekly| Weekly["Weekly Cadence"]
+    Frequency -->|Monthly| Monthly["Monthly Cadence"]
     
-    Daily --> Schedule[Set Start Date/Time UTC<br/>Optional End Date/Time UTC]
+    Daily --> Schedule["Set Start Date/Time UTC<br/>Optional End Date/Time UTC"]
     Weekly --> Schedule
     Monthly --> Schedule
     
-    Schedule --> Step3[Step 3: Guards & Protection]
+    Schedule --> Step3["Step 3: Guards & Protection"]
     
-    Step3 --> Slippage[Set Slippage Protection<br/>Default: 0.5% 50bps]
-    Slippage --> PriceGuards{Price Guards}
+    Step3 --> Slippage["Set Slippage Protection<br/>Default: 0.5% 50bps"]
+    Slippage --> PriceGuards{"Price Guards"}
     
-    PriceGuards -->|BUY Position| PriceCap[Set Price Cap USD<br/>Maximum BTC price to buy]
-    PriceGuards -->|SELL Position| PriceFloor[Set Price Floor USD<br/>Minimum BTC price to sell]
-    PriceGuards -->|Both| BothGuards[Set Both Price Cap & Floor]
+    PriceGuards -->|BUY Position| PriceCap["Set Price Cap USD<br/>Maximum BTC price to buy"]
+    PriceGuards -->|SELL Position| PriceFloor["Set Price Floor USD<br/>Minimum BTC price to sell"]
+    PriceGuards -->|Both| BothGuards["Set Both Price Cap & Floor"]
     
-    PriceCap --> DepegGuard[Depeg Guard<br/>1% max deviation from USD peg]
+    PriceCap --> DepegGuard["Depeg Guard<br/>1% max deviation from USD peg"]
     PriceFloor --> DepegGuard
     BothGuards --> DepegGuard
     
-    DepegGuard --> Step4[Step 4: Routing & MEV Protection]
+    DepegGuard --> Step4["Step 4: Routing & MEV Protection"]
     
-    Step4 --> Venue{Venue Selection}
-    Venue -->|AUTO Recommended| AutoRoute[AUTO Routing<br/>Intelligent venue selection<br/>CoW ≥ $5k, UniV3 < $5k]
-    Venue -->|Advanced| ManualVenue[Manual Venue Selection<br/>UNIV3_ONLY | COW_ONLY | AGGREGATOR]
+    Step4 --> Venue{"Venue Selection"}
+    Venue -->|AUTO Recommended| AutoRoute["AUTO Routing<br/>Intelligent venue selection<br/>CoW ≥ $5k, UniV3 < $5k"]
+    Venue -->|Advanced| ManualVenue["Manual Venue Selection<br/>UNIV3_ONLY / COW_ONLY / AGGREGATOR"]
     
-    AutoRoute --> MEVProtection[MEV Protection Mode]
+    AutoRoute --> MEVProtection["MEV Protection Mode"]
     ManualVenue --> MEVProtection
     
-    MEVProtection --> MEVMode{MEV Mode}
-    MEVMode -->|PRIVATE Default| Private[PRIVATE Mode<br/>Flashbots integration<br/>MEV protection]
-    MEVMode -->|PUBLIC| Public[PUBLIC Mode<br/>Tight slippage limits<br/>Higher MEV risk]
+    MEVProtection --> MEVMode{"MEV Mode"}
+    MEVMode -->|PRIVATE Default| Private["PRIVATE Mode<br/>Flashbots integration<br/>MEV protection"]
+    MEVMode -->|PUBLIC| Public["PUBLIC Mode<br/>Tight slippage limits<br/>Higher MEV risk"]
     
-    Private --> GasCaps[Optional Gas Caps<br/>maxBaseFeeWei<br/>maxPriorityFeeWei]
+    Private --> GasCaps["Optional Gas Caps<br/>maxBaseFeeWei<br/>maxPriorityFeeWei"]
     Public --> GasCaps
     
-    GasCaps --> Review[Review Position Parameters]
-    Review --> Validate{Validate Parameters}
+    GasCaps --> Review["Review Position Parameters"]
+    Review --> Validate{"Validate Parameters"}
     
-    Validate -->|Invalid| Error[Show Validation Errors<br/>Return to Step 1]
-    Validate -->|Valid| Estimate[Estimate Total Cost<br/>Protocol fees + Execution fees]
+    Validate -->|Invalid| Error["Show Validation Errors<br/>Return to Step 1"]
+    Validate -->|Valid| Estimate["Estimate Total Cost<br/>Protocol fees + Execution fees"]
     
     Error --> Step1
-    Estimate --> ApprovePermit[Approve Permit2 Allowances<br/>Quote token for BUY<br/>WBTC for SELL]
+    Estimate --> ApprovePermit["Approve Permit2 Allowances<br/>Quote token for BUY<br/>WBTC for SELL"]
     
-    ApprovePermit --> CreateTx[Sign Position Creation Transaction]
-    CreateTx --> TxPending[Transaction Pending]
-    TxPending --> TxSuccess{Transaction Success?}
+    ApprovePermit --> CreateTx["Sign Position Creation Transaction"]
+    CreateTx --> TxPending["Transaction Pending"]
+    TxPending --> TxSuccess{"Transaction Success?"}
     
-    TxSuccess -->|Failed| TxError[Transaction Failed<br/>Show error message<br/>Retry option]
-    TxSuccess -->|Success| PositionCreated[Position Created Successfully<br/>NFT Minted<br/>Position Storage Initialized]
+    TxSuccess -->|Failed| TxError["Transaction Failed<br/>Show error message<br/>Retry option"]
+    TxSuccess -->|Success| PositionCreated["Position Created Successfully<br/>NFT Minted<br/>Position Storage Initialized"]
     
     TxError --> CreateTx
-    PositionCreated --> Dashboard[Return to Dashboard<br/>Position Visible]
+    PositionCreated --> Dashboard["Return to Dashboard<br/>Position Visible"]
     
     Dashboard --> End([Position Creation Complete])
     
