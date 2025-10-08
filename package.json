@@ -1,0 +1,37 @@
+{
+  "name": "bitcoin-dca",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Bitcoin DCA - Non-custodial automated DCA for WBTC on Ethereum",
+  "scripts": {
+    "contracts:compile": "cd contracts && pnpm hardhat compile",
+    "contracts:test": "cd contracts && pnpm hardhat test",
+    "contracts:deploy:local": "cd contracts && pnpm hardhat deploy --network localhost",
+    "contracts:deploy:sepolia": "cd contracts && pnpm hardhat deploy --network sepolia",
+    "frontend:dev": "cd frontend && pnpm dev",
+    "frontend:build": "cd frontend && pnpm build",
+    "frontend:start": "cd frontend && pnpm start",
+    "frontend:lint": "cd frontend && pnpm lint",
+    "frontend:test": "cd frontend && pnpm test",
+    "frontend:test:watch": "cd frontend && pnpm test:watch",
+    "frontend:type-check": "cd frontend && pnpm type-check",
+    "dev": "pnpm run frontend:dev",
+    "lint": "prettier --check . && cd frontend && pnpm lint",
+    "format": "prettier --write ."
+  },
+  "keywords": [
+    "dca",
+    "bitcoin",
+    "wbtc",
+    "ethereum",
+    "defi"
+  ],
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "devDependencies": {
+    "prettier": "^3.2.5",
+    "prettier-plugin-solidity": "^1.3.1"
+  }
+}

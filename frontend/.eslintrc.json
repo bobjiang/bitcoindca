@@ -1,0 +1,16 @@
+{
+  "extends": ["next/core-web-vitals", "next/typescript"],
+  "plugins": ["@tanstack/query"],
+  "rules": {
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
+      }
+    ],
+    "@typescript-eslint/no-explicit-any": "warn",
+    "@tanstack/query/prefer-query-object-syntax": "warn",
+    "@tanstack/query/exhaustive-deps": "warn"
+  }
+}

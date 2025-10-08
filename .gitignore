@@ -1,1 +1,62 @@
 .claude
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Testing
+coverage/
+*.lcov
+
+# Next.js
+frontend/.next/
+frontend/out/
+frontend/build/
+
+# Production
+build/
+dist/
+
+# Misc
+.DS_Store
+*.pem
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Local env files
+.env
+.env*.local
+.env.production
+
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Hardhat
+contracts/cache/
+contracts/artifacts/
+contracts/deployments/localhost/
+contracts/typechain-types/
+
+# Hardhat coverage
+contracts/coverage/
+contracts/coverage.json
+
+# Hardhat gas reporter
+contracts/gas-report.txt
+
+# Misc
+.idea/
+.vscode/
+*.swp
+*.swo
+*~

@@ -289,4 +289,5 @@ Foundry
 - CoW Protocol: https://cow.fi/
 - Uniswap V3 API: https://hub.uniswap.org/
 - 1inch Aggregator: https://app.1inch.io/
-- 
+- viem: https://viem.sh/
+- RainbowKit: https://rainbowkit.com/
