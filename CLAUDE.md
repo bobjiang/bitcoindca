@@ -4,13 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Bitcoin and Ethereum Dollar Cost Averaging (DCA) application. The repository is currently in its initial state with minimal structure.
+This is a Bitcoin (WBTC) and Ethereum (ETH) Dollar Cost Averaging (DCA) application. The repository is currently in its initial state with the requirements.
 
 # Bitcoin DCA on Ethereum — Merged Requirements (v0.3)
 
 ## 0. Goals & Scope
 
-- Goal: Non-custodial automated DCA to buy/sell WBTC on daily/weekly/monthly cadence using USDC (default) or other supported stable tokens (like USDT, DAI etc).
+- Goal: Non-custodial automated DCA to buy/sell WBTC on daily/weekly/monthly cadence using USDC (default) or other supported stable tokens (like USDT etc).
 - Venues: AUTO routing (Uniswap v3 ↔ CoW ↔ 1inch) with MEV protection.
 - Automation: Chainlink Automation primary; Gelato fallback; optional public execution with tip after a grace window.
 - Security posture: Long TWAP, multi-oracle checks, strict slippage, circuit breakers, position/volume limits.
@@ -266,140 +266,6 @@ function checkLiquidity(uint256 id) external view
 returns (bool hasLiquidity, uint256 expectedSlippageBps, bytes memory optimalPath);
 ```
 
-# Tech stacks
-
-Primary (most sensible) stack
-
-## App framework
-
-- Next.js (15+) + React 18 + TypeScript 
-— file-based routing, RSC, great DX, easy SSR/ISR for public pages (docs, FAQs, ToS), and 
-- solid deployment to Vercel or your own Node.
-
-## Web3 + wallets
-
-- wagmi v2 + viem — modern, type-safe, faster than ethers, first-class for contract reads/writes, events, and ABI types.
-- RainbowKit (or Web3Modal if you prefer vendor-agnostic) — clean wallet UX, supports WalletConnect v2, Ledger, Coinbase Wallet.
-- @safe-global/safe-apps-sdk — if you want a Safe app mode for treasuries/multisigs.
-
-## Data & caching
-
-- TanStack Query — retries, dedup, caching of reads (pairs well with wagmi).
-- The Graph + urql (or Apollo) for your subgraph (Positions, Fills, ExecutionDetails).
-
-## Forms & validation
-
-- react-hook-form + zod — strong runtime validation for strategy creation (amounts, slippage, price guards).
-
-## State & UI
-
-- Zustand (lightweight app state) + Tailwind CSS + shadcn/ui (Radix based) — fast to ship a clean, accessible console.
-- Lucide-react for icons.
-
-## Charts & tables
-
-- Recharts (easy) or ECharts (powerful) for cost-basis and fill history.
-- TanStack Table for execution logs with virtualized rows.
-
-## Dates & i18n
-
-- date-fns (no moment bloat) + i18next if you’ll localize.
-
-## Notifications & telemetry
-
-- Push Protocol (EPNS) or email/webhook via your backend for fill/skip alerts.
-- Sentry for FE errors; PostHog or Plausible for product analytics.
-
-## Monorepo & tooling
-
-- Turborepo + pnpm, ESLint/Prettier, Husky + lint-staged.
-- Vitest + React Testing Library + Playwright for e2e.
-- Storybook for strategy form components.
-
-## Key frontend features to implement (non-negotiable)
-
-- Strategy Wizard (3–4 steps)
-	1.	Direction & asset amounts (BUY/SELL, per-period amount, USD-equiv toggle)
-	2.	Cadence & schedule (daily/weekly/monthly, start/end)
-	3.	Guards (slippage, price floor/cap, TWAP profile template)
-	4.	Review & sign (Permit2 approval → create tx)
-- Positions dashboard
-- Cards: status, next run (local time), period progress, avg cost (TWAP vs realized), balances, fees paid.
-- Actions: deposit/withdraw, pause/resume, modify, cancel, export CSV.
-- Execution log
-- Table with tx hash, venue (Uni/CoW/1inch), in/out, price, fees, price impact bps, keeper, gas used.
-- Health & limits
-- Global/position caps, depeg warnings, oracle staleness banner, circuit-breaker status.
-- Safe App mode
-- Detect Safe context and switch flow to multisig (proposing txs instead of direct send).
-
-
-## Project Repository Structure
-@todo, refine the structure with next.js
-
-```
-apps/web/
-  app/
-    (public)/         # marketing/docs pages (SSR/ISR)
-    dashboard/        # protected console (SPA/RSC compliant)
-      positions/
-      create/
-      settings/
-    api/              # minimal server routes if needed
-  components/
-    forms/            # RHF + zod schemas
-    charts/
-    tables/
-    web3/
-  lib/
-    abis/
-    wagmi.ts          # client, chains, transports
-    viem.ts
-    subgraph.ts
-    formatters.ts     # amounts, prices, bps
-    guards.ts         # client-side validation mirrors
-  styles/
-  tests/
-packages/
-  ui/                 # shared design system tokens/components
-  config/             # eslint, tsconfig, tailwind presets
-```
-
-### Recommended library choices (pin these)
-- wagmi: ^2.x
-- viem: ^2.x
-- @rainbow-me/rainbowkit: latest
-- @safe-global/safe-apps-sdk: latest
-- @tanstack/react-query: ^5.x
-- react-hook-form: ^7.x + zod ^3.x
-- @tanstack/react-table: ^8.x
-- recharts or echarts-for-react
-- date-fns ^3.x
-- tailwindcss ^3.x + shadcn/ui
-
-## Dev UX tips specific to this dApp
-
-- Decimal hell prevention: centralize formatAmount(token, raw) & parseAmount(token, ui) with token metadata (decimals) and stick to bigint via viem.
-- Optimistic UI carefully: only optimistic after tx enters mempool; reflect pending state and revert cleanly.
-- Subgraph + live events: consume historical via subgraph, overlay live fills using watchContractEvent to feel realtime.
-- Guard previews: show user what will skip execution (e.g., price floor/cap, depeg, gas caps) before they sign.
-- CSV export: generate client-side from subgraph + local cache; include fiat rates used at execution.
-
-## Bootstrap commands (if you want a head start)
-
-# Create Next app
-pnpm create next-app@latest dca-web --ts --eslint --tailwind
-
-# Add core deps
-
-```
-pnpm add wagmi viem @rainbow-me/rainbowkit
-pnpm add @tanstack/react-query zod react-hook-form
-pnpm add @tanstack/react-table recharts date-fns
-pnpm add class-variance-authority clsx lucide-react
-pnpm add @safe-global/safe-apps-sdk
-```
-
 # Dev/testing
 pnpm add -D vitest @testing-library/react @types/node @types/react
 
@@ -419,4 +285,8 @@ Foundry
 - MEV protection: https://cow.fi/learn/understanding-mev-protection
 - Chainlink Automation primary: https://docs.chain.link/chainlink-functions/tutorials/automate-functions
 - Gelato fallback: https://docs.gelato.cloud/vrf/how-to-guides/create-a-fallback-vrf
+- Flashbot: https://www.flashbots.net/
+- CoW Protocol: https://cow.fi/
+- Uniswap V3 API: https://hub.uniswap.org/
+- 1inch Aggregator: https://app.1inch.io/
 - 
