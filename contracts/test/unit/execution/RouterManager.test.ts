@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
-import { deployFullSystemFixture } from "../../fixtures/deployments";
+import { deployRouterManagerFixture } from "../../fixtures/deployments";
 import { ensureArtifactOrSkip } from "../../helpers/artifacts";
 import { Venue, ROLES } from "../../helpers/constants";
 
@@ -28,13 +28,13 @@ describe("RouterManager", function () {
 
   describe("Deployment and Initialization", function () {
     it("should deploy with correct DcaManager reference", async function () {
-      const { routerManager, dcaManager } = await loadFixture(deployFullSystemFixture);
+      const { routerManager, dcaManager } = await loadFixture(deployRouterManagerFixture);
 
       expect(await routerManager.dcaManager()).to.equal(await dcaManager.getAddress());
     });
 
     it("should initialize with no adapters", async function () {
-      const { routerManager } = await loadFixture(deployFullSystemFixture);
+      const { routerManager } = await loadFixture(deployRouterManagerFixture);
 
       const adapterCount = await routerManager.getAdapterCount();
 
@@ -44,7 +44,7 @@ describe("RouterManager", function () {
 
   describe("Adapter Registration", function () {
     it("should register UniV3 adapter", async function () {
-      const { routerManager, uniV3Adapter, deployer } = await loadFixture(deployFullSystemFixture);
+      const { routerManager, uniV3Adapter, deployer } = await loadFixture(deployRouterManagerFixture);
 
       await expect(
         routerManager.connect(deployer).addRouterAdapter(await uniV3Adapter.getAddress(), Venue.UNIV3_ONLY)
@@ -54,7 +54,7 @@ describe("RouterManager", function () {
     });
 
     it("should register CoW adapter", async function () {
-      const { routerManager, cowAdapter, deployer } = await loadFixture(deployFullSystemFixture);
+      const { routerManager, cowAdapter, deployer } = await loadFixture(deployRouterManagerFixture);
 
       await expect(
         routerManager.connect(deployer).addRouterAdapter(await cowAdapter.getAddress(), Venue.COW_ONLY)
@@ -64,7 +64,7 @@ describe("RouterManager", function () {
     });
 
     it("should register 1inch adapter", async function () {
-      const { routerManager, oneInchAdapter, deployer } = await loadFixture(deployFullSystemFixture);
+      const { routerManager, oneInchAdapter, deployer } = await loadFixture(deployRouterManagerFixture);
 
       await expect(
         routerManager.connect(deployer).addRouterAdapter(await oneInchAdapter.getAddress(), Venue.AGGREGATOR)
@@ -75,7 +75,7 @@ describe("RouterManager", function () {
 
     it("should track registered adapters", async function () {
       const { routerManager, uniV3Adapter, cowAdapter, oneInchAdapter, deployer } =
-        await loadFixture(deployFullSystemFixture);
+        await loadFixture(deployRouterManagerFixture);
 
       await routerManager.connect(deployer).addRouterAdapter(await uniV3Adapter.getAddress(), Venue.UNIV3_ONLY);
       await routerManager.connect(deployer).addRouterAdapter(await cowAdapter.getAddress(), Venue.COW_ONLY);
@@ -87,7 +87,7 @@ describe("RouterManager", function () {
     });
 
     it("should store adapter by venue", async function () {
-      const { routerManager, uniV3Adapter, deployer } = await loadFixture(deployFullSystemFixture);
+      const { routerManager, uniV3Adapter, deployer } = await loadFixture(deployRouterManagerFixture);
 
       await routerManager.connect(deployer).addRouterAdapter(await uniV3Adapter.getAddress(), Venue.UNIV3_ONLY);
 
@@ -97,7 +97,7 @@ describe("RouterManager", function () {
     });
 
     it("should revert if adapter address is zero", async function () {
-      const { routerManager, deployer } = await loadFixture(deployFullSystemFixture);
+      const { routerManager, deployer } = await loadFixture(deployRouterManagerFixture);
 
       await expect(
         routerManager.connect(deployer).addRouterAdapter(ethers.ZeroAddress, Venue.UNIV3_ONLY)
@@ -105,7 +105,7 @@ describe("RouterManager", function () {
     });
 
     it("should revert if adapter already registered for venue", async function () {
-      const { routerManager, uniV3Adapter, deployer } = await loadFixture(deployFullSystemFixture);
+      const { routerManager, uniV3Adapter, deployer } = await loadFixture(deployRouterManagerFixture);
 
       await routerManager.connect(deployer).addRouterAdapter(await uniV3Adapter.getAddress(), Venue.UNIV3_ONLY);
 
@@ -115,7 +115,7 @@ describe("RouterManager", function () {
     });
 
     it("should revert if non-admin tries to register", async function () {
-      const { routerManager, uniV3Adapter, user1 } = await loadFixture(deployFullSystemFixture);
+      const { routerManager, uniV3Adapter, user1 } = await loadFixture(deployRouterManagerFixture);
 
       await expect(
         routerManager.connect(user1).addRouterAdapter(await uniV3Adapter.getAddress(), Venue.UNIV3_ONLY)
@@ -125,7 +125,7 @@ describe("RouterManager", function () {
 
   describe("Adapter Updates", function () {
     it("should update adapter for venue", async function () {
-      const { routerManager, uniV3Adapter, deployer } = await loadFixture(deployFullSystemFixture);
+      const { routerManager, uniV3Adapter, deployer } = await loadFixture(deployRouterManagerFixture);
 
       // Register initial adapter
       await routerManager.connect(deployer).addRouterAdapter(await uniV3Adapter.getAddress(), Venue.UNIV3_ONLY);
@@ -141,7 +141,7 @@ describe("RouterManager", function () {
     });
 
     it("should retrieve updated adapter", async function () {
-      const { routerManager, uniV3Adapter, deployer } = await loadFixture(deployFullSystemFixture);
+      const { routerManager, uniV3Adapter, deployer } = await loadFixture(deployRouterManagerFixture);
 
       await routerManager.connect(deployer).addRouterAdapter(await uniV3Adapter.getAddress(), Venue.UNIV3_ONLY);
 
@@ -154,7 +154,7 @@ describe("RouterManager", function () {
     });
 
     it("should revert if no adapter registered for venue", async function () {
-      const { routerManager, deployer } = await loadFixture(deployFullSystemFixture);
+      const { routerManager, deployer } = await loadFixture(deployRouterManagerFixture);
 
       const newAdapterAddress = ethers.Wallet.createRandom().address;
 
@@ -166,7 +166,7 @@ describe("RouterManager", function () {
 
   describe("Adapter Removal", function () {
     it("should remove adapter from venue", async function () {
-      const { routerManager, uniV3Adapter, deployer } = await loadFixture(deployFullSystemFixture);
+      const { routerManager, uniV3Adapter, deployer } = await loadFixture(deployRouterManagerFixture);
 
       await routerManager.connect(deployer).addRouterAdapter(await uniV3Adapter.getAddress(), Venue.UNIV3_ONLY);
 
@@ -176,7 +176,7 @@ describe("RouterManager", function () {
     });
 
     it("should clear adapter mapping after removal", async function () {
-      const { routerManager, uniV3Adapter, deployer } = await loadFixture(deployFullSystemFixture);
+      const { routerManager, uniV3Adapter, deployer } = await loadFixture(deployRouterManagerFixture);
 
       await routerManager.connect(deployer).addRouterAdapter(await uniV3Adapter.getAddress(), Venue.UNIV3_ONLY);
       await routerManager.connect(deployer).removeRouterAdapter(Venue.UNIV3_ONLY);
@@ -187,7 +187,7 @@ describe("RouterManager", function () {
     });
 
     it("should decrement adapter count on removal", async function () {
-      const { routerManager, uniV3Adapter, deployer } = await loadFixture(deployFullSystemFixture);
+      const { routerManager, uniV3Adapter, deployer } = await loadFixture(deployRouterManagerFixture);
 
       await routerManager.connect(deployer).addRouterAdapter(await uniV3Adapter.getAddress(), Venue.UNIV3_ONLY);
 
@@ -201,7 +201,7 @@ describe("RouterManager", function () {
     });
 
     it("should revert if no adapter to remove", async function () {
-      const { routerManager, deployer } = await loadFixture(deployFullSystemFixture);
+      const { routerManager, deployer } = await loadFixture(deployRouterManagerFixture);
 
       await expect(
         routerManager.connect(deployer).removeRouterAdapter(Venue.UNIV3_ONLY)
@@ -212,7 +212,7 @@ describe("RouterManager", function () {
   describe("Route Selection", function () {
     it("should select AUTO route for small amounts", async function () {
       const { routerManager, uniV3Adapter, cowAdapter, oneInchAdapter, tokens, deployer } =
-        await loadFixture(deployFullSystemFixture);
+        await loadFixture(deployRouterManagerFixture);
 
       // Register all adapters
       await routerManager.connect(deployer).addRouterAdapter(await uniV3Adapter.getAddress(), Venue.UNIV3_ONLY);
@@ -234,7 +234,7 @@ describe("RouterManager", function () {
 
     it("should select CoW for large amounts (≥$5k)", async function () {
       const { routerManager, uniV3Adapter, cowAdapter, oneInchAdapter, tokens, deployer } =
-        await loadFixture(deployFullSystemFixture);
+        await loadFixture(deployRouterManagerFixture);
 
       await routerManager.connect(deployer).addRouterAdapter(await uniV3Adapter.getAddress(), Venue.UNIV3_ONLY);
       await routerManager.connect(deployer).addRouterAdapter(await cowAdapter.getAddress(), Venue.COW_ONLY);
@@ -255,7 +255,7 @@ describe("RouterManager", function () {
 
     it("should respect venue override", async function () {
       const { routerManager, uniV3Adapter, cowAdapter, tokens, deployer } =
-        await loadFixture(deployFullSystemFixture);
+        await loadFixture(deployRouterManagerFixture);
 
       await routerManager.connect(deployer).addRouterAdapter(await uniV3Adapter.getAddress(), Venue.UNIV3_ONLY);
       await routerManager.connect(deployer).addRouterAdapter(await cowAdapter.getAddress(), Venue.COW_ONLY);
@@ -274,7 +274,7 @@ describe("RouterManager", function () {
     });
 
     it("should return route data for selected venue", async function () {
-      const { routerManager, uniV3Adapter, tokens, deployer } = await loadFixture(deployFullSystemFixture);
+      const { routerManager, uniV3Adapter, tokens, deployer } = await loadFixture(deployRouterManagerFixture);
 
       await routerManager.connect(deployer).addRouterAdapter(await uniV3Adapter.getAddress(), Venue.UNIV3_ONLY);
 
@@ -295,7 +295,7 @@ describe("RouterManager", function () {
   describe("Adapter Failure Handling", function () {
     it("should fall back to 1inch when primary adapter fails", async function () {
       const { routerManager, uniV3Adapter, cowAdapter, oneInchAdapter, tokens, deployer } =
-        await loadFixture(deployFullSystemFixture);
+        await loadFixture(deployRouterManagerFixture);
 
       await routerManager.connect(deployer).addRouterAdapter(await uniV3Adapter.getAddress(), Venue.UNIV3_ONLY);
       await routerManager.connect(deployer).addRouterAdapter(await cowAdapter.getAddress(), Venue.COW_ONLY);
@@ -318,7 +318,7 @@ describe("RouterManager", function () {
     });
 
     it("should track adapter health status", async function () {
-      const { routerManager, uniV3Adapter, deployer } = await loadFixture(deployFullSystemFixture);
+      const { routerManager, uniV3Adapter, deployer } = await loadFixture(deployRouterManagerFixture);
 
       await routerManager.connect(deployer).addRouterAdapter(await uniV3Adapter.getAddress(), Venue.UNIV3_ONLY);
 
@@ -332,7 +332,7 @@ describe("RouterManager", function () {
     });
 
     it("should emit event on adapter failure", async function () {
-      const { routerManager, uniV3Adapter, deployer } = await loadFixture(deployFullSystemFixture);
+      const { routerManager, uniV3Adapter, deployer } = await loadFixture(deployRouterManagerFixture);
 
       await routerManager.connect(deployer).addRouterAdapter(await uniV3Adapter.getAddress(), Venue.UNIV3_ONLY);
 
@@ -343,7 +343,7 @@ describe("RouterManager", function () {
 
     it("should skip unhealthy adapters in selection", async function () {
       const { routerManager, uniV3Adapter, cowAdapter, tokens, deployer } =
-        await loadFixture(deployFullSystemFixture);
+        await loadFixture(deployRouterManagerFixture);
 
       await routerManager.connect(deployer).addRouterAdapter(await uniV3Adapter.getAddress(), Venue.UNIV3_ONLY);
       await routerManager.connect(deployer).addRouterAdapter(await cowAdapter.getAddress(), Venue.COW_ONLY);
@@ -367,13 +367,13 @@ describe("RouterManager", function () {
 
   describe("Access Control", function () {
     it("should grant router admin role to deployer", async function () {
-      const { routerManager, deployer } = await loadFixture(deployFullSystemFixture);
+      const { routerManager, deployer } = await loadFixture(deployRouterManagerFixture);
 
       expect(await routerManager.hasRole(ROLES.ROUTER_ADMIN, deployer.address)).to.be.true;
     });
 
     it("should allow admin to grant router admin role", async function () {
-      const { routerManager, deployer, user1 } = await loadFixture(deployFullSystemFixture);
+      const { routerManager, deployer, user1 } = await loadFixture(deployRouterManagerFixture);
 
       await routerManager.connect(deployer).grantRole(ROLES.ROUTER_ADMIN, user1.address);
 
@@ -381,7 +381,7 @@ describe("RouterManager", function () {
     });
 
     it("should only allow router admin to add adapters", async function () {
-      const { routerManager, uniV3Adapter, user1 } = await loadFixture(deployFullSystemFixture);
+      const { routerManager, uniV3Adapter, user1 } = await loadFixture(deployRouterManagerFixture);
 
       await expect(
         routerManager.connect(user1).addRouterAdapter(await uniV3Adapter.getAddress(), Venue.UNIV3_ONLY)
@@ -389,7 +389,7 @@ describe("RouterManager", function () {
     });
 
     it("should only allow router admin to remove adapters", async function () {
-      const { routerManager, uniV3Adapter, deployer, user1 } = await loadFixture(deployFullSystemFixture);
+      const { routerManager, uniV3Adapter, deployer, user1 } = await loadFixture(deployRouterManagerFixture);
 
       await routerManager.connect(deployer).addRouterAdapter(await uniV3Adapter.getAddress(), Venue.UNIV3_ONLY);
 
@@ -399,7 +399,7 @@ describe("RouterManager", function () {
     });
 
     it("should only allow router admin to update adapter status", async function () {
-      const { routerManager, uniV3Adapter, deployer, user1 } = await loadFixture(deployFullSystemFixture);
+      const { routerManager, uniV3Adapter, deployer, user1 } = await loadFixture(deployRouterManagerFixture);
 
       await routerManager.connect(deployer).addRouterAdapter(await uniV3Adapter.getAddress(), Venue.UNIV3_ONLY);
 
@@ -412,7 +412,7 @@ describe("RouterManager", function () {
   describe("Adapter Query Functions", function () {
     it("should list all registered adapters", async function () {
       const { routerManager, uniV3Adapter, cowAdapter, deployer } =
-        await loadFixture(deployFullSystemFixture);
+        await loadFixture(deployRouterManagerFixture);
 
       await routerManager.connect(deployer).addRouterAdapter(await uniV3Adapter.getAddress(), Venue.UNIV3_ONLY);
       await routerManager.connect(deployer).addRouterAdapter(await cowAdapter.getAddress(), Venue.COW_ONLY);
@@ -425,7 +425,7 @@ describe("RouterManager", function () {
     });
 
     it("should check if venue has adapter", async function () {
-      const { routerManager, uniV3Adapter, deployer } = await loadFixture(deployFullSystemFixture);
+      const { routerManager, uniV3Adapter, deployer } = await loadFixture(deployRouterManagerFixture);
 
       expect(await routerManager.hasAdapter(Venue.UNIV3_ONLY)).to.be.false;
 
@@ -435,7 +435,7 @@ describe("RouterManager", function () {
     });
 
     it("should get adapter info", async function () {
-      const { routerManager, uniV3Adapter, deployer } = await loadFixture(deployFullSystemFixture);
+      const { routerManager, uniV3Adapter, deployer } = await loadFixture(deployRouterManagerFixture);
 
       await routerManager.connect(deployer).addRouterAdapter(await uniV3Adapter.getAddress(), Venue.UNIV3_ONLY);
 

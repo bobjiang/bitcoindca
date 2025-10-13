@@ -124,9 +124,9 @@ export async function deployBaseSystemFixture() {
   await executorContract.grantRole(ROLES.EXECUTOR, executor.address);
   await executorContract.grantRole(ROLES.KEEPER, keeper.address);
 
-  // Setup fee configuration
+  // Setup protocol configuration to mirror production defaults
   const feeConfig = createDefaultFeeConfig(await treasuryContract.getAddress());
-  await dcaManager.updateFeeConfiguration(feeConfig);
+  await dcaManager.setProtocolConfig(feeConfig);
 
   // Setup test balances
   await setupTestBalances(tokens, [user1, user2, user3]);
@@ -151,10 +151,7 @@ export async function deployBaseSystemFixture() {
   };
 }
 
-/**
- * Full system with DEX adapters fixture
- */
-export async function deployFullSystemFixture() {
+async function deploySystemWithAdapters(options?: { registerAdapters?: boolean }) {
   const base = await deployBaseSystemFixture();
 
   // Deploy mock DEX infrastructure
@@ -183,19 +180,20 @@ export async function deployFullSystemFixture() {
   );
   await oneInchAdapter.waitForDeployment();
 
-  // Register adapters with RouterManager
-  await base.routerManager.addRouterAdapter(
-    await uniV3Adapter.getAddress(),
-    1 // UNIV3_ONLY
-  );
-  await base.routerManager.addRouterAdapter(
-    await cowAdapter.getAddress(),
-    2 // COW_ONLY
-  );
-  await base.routerManager.addRouterAdapter(
-    await oneInchAdapter.getAddress(),
-    3 // AGGREGATOR
-  );
+  if (options?.registerAdapters !== false) {
+    await base.routerManager.addRouterAdapter(
+      await uniV3Adapter.getAddress(),
+      1 // UNIV3_ONLY
+    );
+    await base.routerManager.addRouterAdapter(
+      await cowAdapter.getAddress(),
+      2 // COW_ONLY
+    );
+    await base.routerManager.addRouterAdapter(
+      await oneInchAdapter.getAddress(),
+      3 // AGGREGATOR
+    );
+  }
 
   return {
     ...base,
@@ -204,6 +202,20 @@ export async function deployFullSystemFixture() {
     cowAdapter,
     oneInchAdapter,
   };
+}
+
+/**
+ * Full system with DEX adapters fixture (adapters pre-registered)
+ */
+export async function deployFullSystemFixture() {
+  return deploySystemWithAdapters({ registerAdapters: true });
+}
+
+/**
+ * RouterManager-centric fixture (adapters deployed but NOT registered)
+ */
+export async function deployRouterManagerFixture() {
+  return deploySystemWithAdapters({ registerAdapters: false });
 }
 
 /**

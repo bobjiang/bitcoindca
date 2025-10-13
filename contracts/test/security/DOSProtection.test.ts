@@ -211,13 +211,36 @@ describe("Security: DOS Protection", function () {
     });
 
     it("should enforce global position limit", async function () {
-      const { dcaManager, deployer } = await loadFixture(deployFullSystemFixture);
+      const { dcaManager, tokens, user1, user2, user3, deployer } =
+        await loadFixture(deployFullSystemFixture);
 
-      // Set a very low global limit for testing
       await dcaManager.connect(deployer).setMaxGlobalPositions(5);
 
-      // This test would need to create 5+ positions across multiple users
-      // to verify the global limit is enforced
+      const owners = [user1, user2, user3];
+      const usdcAddress = await tokens.usdc.getAddress();
+      const managerAddress = await dcaManager.getAddress();
+
+      for (const owner of owners) {
+        await tokens.usdc.connect(owner).approve(managerAddress, ethers.MaxUint256);
+      }
+
+      for (let i = 0; i < 5; i++) {
+        const owner = owners[i % owners.length];
+        const params = createDefaultPositionParams(owner.address, {
+          quoteToken: usdcAddress,
+          startAt: (await getCurrentTime()) + (i + 1) * 60,
+        });
+        await dcaManager.connect(owner).createPosition(params);
+      }
+
+      const extraOwner = owners[0];
+      const extraParams = createDefaultPositionParams(extraOwner.address, {
+        quoteToken: usdcAddress,
+      });
+
+      await expect(
+        dcaManager.connect(extraOwner).createPosition(extraParams)
+      ).to.be.reverted;
     });
   });
 
@@ -227,27 +250,29 @@ describe("Security: DOS Protection", function () {
         deployFullSystemFixture
       );
 
-      // Set daily volume limit
-      await dcaManager.connect(deployer).setDailyVolumeLimitUsd(
-        ethers.parseUnits("100000", 6) // $100k daily
-      );
+      const limit = ethers.parseUnits("1000", 6); // $1,000 daily cap
+      await dcaManager.connect(deployer).setDailyVolumeLimitUsd(limit);
 
-      // Attacker tries to create many large positions to hit volume limit
-      await tokens.usdc
-        .connect(user1)
-        .approve(await dcaManager.getAddress(), ethers.MaxUint256);
+      const usdcAddress = await tokens.usdc.getAddress();
+      const managerAddress = await dcaManager.getAddress();
 
-      // Create positions totaling $100k per period
-      for (let i = 0; i < 5; i++) {
-        const params = createDefaultPositionParams(user1.address, {
-          quoteToken: await tokens.usdc.getAddress(),
-          amountPerPeriod: ethers.parseUnits("20000", 6), // $20k each
-        });
-        await dcaManager.connect(user1).createPosition(params);
-      }
+      await tokens.usdc.connect(user1).approve(managerAddress, ethers.MaxUint256);
+      await tokens.usdc.connect(user2).approve(managerAddress, ethers.MaxUint256);
 
-      // Legitimate user should still be able to create position
-      // System should track and enforce daily volume across all users
+      const paramsA = createDefaultPositionParams(user1.address, {
+        quoteToken: usdcAddress,
+        amountPerPeriod: ethers.parseUnits("600", 6),
+      });
+      await dcaManager.connect(user1).createPosition(paramsA);
+
+      const paramsB = createDefaultPositionParams(user2.address, {
+        quoteToken: usdcAddress,
+        amountPerPeriod: ethers.parseUnits("500", 6),
+      });
+
+      await expect(
+        dcaManager.connect(user2).createPosition(paramsB)
+      ).to.be.reverted;
     });
 
     it("should resist triggering circuit breaker via price manipulation", async function () {

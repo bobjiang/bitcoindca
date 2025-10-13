@@ -138,7 +138,11 @@ describe("Bitcoin DCA – System behaviour", function () {
 
       await dcaManager
         .connect(user)
-        .depositQuote(positionId, ethers.parseUnits("1500", TOKEN_DECIMALS.USDC));
+        .deposit(
+          positionId,
+          addresses.USDC,
+          ethers.parseUnits("1500", TOKEN_DECIMALS.USDC)
+        );
 
       await time.increaseTo(now + 3600 + 1);
 
@@ -181,7 +185,11 @@ describe("Bitcoin DCA – System behaviour", function () {
 
       await dcaManager
         .connect(user)
-        .depositQuote(positionId, ethers.parseUnits("500", TOKEN_DECIMALS.USDC));
+        .deposit(
+          positionId,
+          addresses.USDC,
+          ethers.parseUnits("500", TOKEN_DECIMALS.USDC)
+        );
 
       await time.increaseTo(now + 60 + 1);
 
@@ -219,9 +227,15 @@ describe("Bitcoin DCA – System behaviour", function () {
 
       const positionId = extractPositionId({ logs }, dcaManager);
 
-      await dcaManager.connect(user).depositQuote(positionId, ethers.parseUnits("200", TOKEN_DECIMALS.USDC));
+      await dcaManager
+        .connect(user)
+        .deposit(
+          positionId,
+          addresses.USDC,
+          ethers.parseUnits("200", TOKEN_DECIMALS.USDC)
+        );
 
-      await expect(dcaManager.connect(owner).pausePosition(positionId))
+      await expect(dcaManager.connect(owner).pause(positionId))
         .to.emit(dcaManager, "Paused")
         .withArgs(positionId);
 
