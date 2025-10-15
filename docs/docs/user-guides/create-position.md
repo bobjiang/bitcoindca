@@ -54,9 +54,15 @@ If the manager rejects the transaction, check `ExecutionSkipped` reasons or cons
 
 ## 7. Fund the position
 
+Creating a position and funding it are two distinct on-chain transactions. The initial `createPosition` call stores strategy parameters and mints the `PositionNFT`, but it does **not** pull tokens from your wallet—this keeps the flow flexible for top-ups or multi-owner approvals.
+
+Immediately after the creation transaction confirms, the app prompts you to deposit in the same session:
+
 - Click **Deposit** and choose the asset matching your strategy direction.
-- The app calls `deposit(positionId, token, amount)` which credits the manager’s balance mappings.
-- Funding requirements are documented in `contracts/test/system.behavior.spec.ts`, ensuring executions fail gracefully if funds are insufficient.
+- The UI submits a second transaction (`deposit(positionId, token, amount)`), which credits the manager’s internal balances.
+- In a Safe, the frontend batches both calls in a single multi-send so you can sign once; externally owned accounts simply confirm two sequential transactions.
+
+Funding requirements are documented in `contracts/test/system.behavior.spec.ts`, ensuring executions fail gracefully if funds are insufficient. You can also return later to top up additional liquidity using the same `deposit` flow.
 
 ## 8. Verify readiness
 
