@@ -110,6 +110,9 @@ pnpm frontend:type-check
 - [User Flow](./user-flow.md)
 - [Tech Stacks](./tech-stacks.md)
 - [Project Requirements](./CLAUDE.md)
+- Docusaurus site (`/docs` route in the frontend):
+  - Local authoring: `pnpm docs:dev`
+  - Build & sync into Next.js: `pnpm docs:sync` (copies `docs/build` into `frontend/public/docs`)
 
 ## License
 
