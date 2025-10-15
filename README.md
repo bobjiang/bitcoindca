@@ -7,7 +7,9 @@ Non-custodial automated Dollar Cost Averaging (DCA) for WBTC on Ethereum.
 ```
 .
 ├── contracts/          # Solidity smart contracts (Hardhat)
+│   └── test/           # Hardhat test suites
 ├── frontend/           # Next.js web application
+├── docs/               # Docusaurus documentation source
 ├── CLAUDE.md          # Project requirements and architecture
 ├── architecture.md    # System architecture details
 ├── user-flow.md       # User flow documentation
@@ -103,6 +105,7 @@ pnpm frontend:type-check
 - Hardhat (contracts)
 - Vitest + React Testing Library (frontend)
 - Playwright (e2e)
+- Solidity test suites live in `contracts/test`
 
 ## Documentation
 
@@ -110,6 +113,7 @@ pnpm frontend:type-check
 - [User Flow](./user-flow.md)
 - [Tech Stacks](./tech-stacks.md)
 - [Project Requirements](./CLAUDE.md)
+- [Docs Source](./docs/)
 - Docusaurus site (`/docs` route in the frontend):
   - Local authoring: `pnpm docs:dev`
   - Build & sync into Next.js: `pnpm docs:sync` (copies `docs/build` into `frontend/public/docs`)
