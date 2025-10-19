@@ -12,6 +12,7 @@ import {
   getCurrentTime,
   calculateProtocolFee,
   calculateExecutionFee,
+  createDefaultModifyParams,
 } from "../../helpers/utils";
 import {
   ROLES,
@@ -328,6 +329,27 @@ describe("Executor", function () {
 
         expect(valid).to.be.true;
       });
+
+      it("should fail gas validation when base fee exceeds cap", async function () {
+        const { executorContract, dcaManager, positionId, user1 } =
+          await loadFixture(deployWithPositionFixture);
+
+        const lowCap = ethers.parseUnits("1", "gwei");
+
+        const modifyParams = createDefaultModifyParams({
+          beneficiary: user1.address,
+          maxBaseFeeWei: lowCap,
+        });
+
+        await dcaManager.connect(user1).modify(positionId, modifyParams);
+
+        await ethers.provider.send("hardhat_setNextBlockBaseFeePerGas", ["0x77359400"]); // 2 gwei
+        await ethers.provider.send("evm_mine", []);
+
+        const valid = await executorContract.validateGasCaps(positionId);
+
+        expect(valid).to.be.false;
+      });
     });
   });
 
@@ -501,6 +523,33 @@ describe("Executor", function () {
       await expect(executorContract.connect(executor).execute(positionId)).to.be.revertedWith(
         "Position not eligible"
       );
+    });
+
+    it("should skip execution when gas caps are exceeded", async function () {
+      const { executorContract, dcaManager, positionId, createParams, executor, user1 } =
+        await loadFixture(deployWithPositionFixture);
+
+      const tightCaps = createDefaultModifyParams({
+        beneficiary: user1.address,
+        maxBaseFeeWei: ethers.parseUnits("1", "gwei"),
+        maxPriorityFeeWei: ethers.parseUnits("1", "gwei"),
+      });
+
+      await dcaManager.connect(user1).modify(positionId, tightCaps);
+
+      await advanceTimeTo(createParams.startAt);
+
+      await ethers.provider.send("hardhat_setNextBlockBaseFeePerGas", ["0x77359400"]); // 2 gwei
+      await ethers.provider.send("evm_mine", []);
+
+      await expect(
+        executorContract.connect(executor).execute(positionId, {
+          maxFeePerGas: ethers.parseUnits("6", "gwei"),
+          maxPriorityFeePerGas: ethers.parseUnits("3", "gwei"),
+        })
+      )
+        .to.emit(executorContract, "ExecutionSkipped")
+        .withArgs(positionId);
     });
 
     it("should skip and emit event if guards fail", async function () {

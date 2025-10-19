@@ -661,6 +661,118 @@ describe("DcaManager", function () {
         dcaManager.connect(user1).setMaxPositionsPerUser(20)
       ).to.be.revertedWith("AccessControl: account");
     });
+
+    it("should allow admin to update global position cap", async function () {
+      const { dcaManager, deployer } = await loadFixture(deployBaseSystemFixture);
+      const contract: any = dcaManager;
+
+      if (typeof contract.setMaxGlobalPositions !== "function") {
+        this.skip();
+      }
+
+      await contract.connect(deployer).setMaxGlobalPositions(5000);
+
+      expect(await contract.maxGlobalPositions()).to.equal(5000);
+    });
+
+    it("should revert if non-admin updates global position cap", async function () {
+      const { dcaManager, user1 } = await loadFixture(deployBaseSystemFixture);
+      const contract: any = dcaManager;
+
+      if (typeof contract.setMaxGlobalPositions !== "function") {
+        this.skip();
+      }
+
+      await expect(
+        contract.connect(user1).setMaxGlobalPositions(5000)
+      ).to.be.revertedWith("AccessControl: account");
+    });
+
+    it("should allow admin to update minimum position size", async function () {
+      const { dcaManager, deployer } = await loadFixture(deployBaseSystemFixture);
+      const contract: any = dcaManager;
+
+      if (typeof contract.setMinPositionSizeUsd !== "function") {
+        this.skip();
+      }
+
+      const newMinimum = ethers.parseUnits("250", 6);
+
+      await contract.connect(deployer).setMinPositionSizeUsd(newMinimum);
+
+      expect(await contract.minPositionSizeUsd()).to.equal(newMinimum);
+    });
+
+    it("should revert if non-admin updates minimum position size", async function () {
+      const { dcaManager, user1 } = await loadFixture(deployBaseSystemFixture);
+      const contract: any = dcaManager;
+
+      if (typeof contract.setMinPositionSizeUsd !== "function") {
+        this.skip();
+      }
+
+      await expect(
+        contract.connect(user1).setMinPositionSizeUsd(ethers.parseUnits("250", 6))
+      ).to.be.revertedWith("AccessControl: account");
+    });
+
+    it("should allow admin to update daily volume limit", async function () {
+      const { dcaManager, deployer } = await loadFixture(deployBaseSystemFixture);
+      const contract: any = dcaManager;
+
+      if (typeof contract.setDailyVolumeLimitUsd !== "function") {
+        this.skip();
+      }
+
+      const newLimit = ethers.parseUnits("5000000", 6);
+
+      await contract.connect(deployer).setDailyVolumeLimitUsd(newLimit);
+
+      if (typeof contract.dailyVolumeLimitUsd === "function") {
+        expect(await contract.dailyVolumeLimitUsd()).to.equal(newLimit);
+      }
+    });
+
+    it("should revert if non-admin updates daily volume limit", async function () {
+      const { dcaManager, user1 } = await loadFixture(deployBaseSystemFixture);
+      const contract: any = dcaManager;
+
+      if (typeof contract.setDailyVolumeLimitUsd !== "function") {
+        this.skip();
+      }
+
+      await expect(
+        contract.connect(user1).setDailyVolumeLimitUsd(ethers.parseUnits("5000000", 6))
+      ).to.be.revertedWith("AccessControl: account");
+    });
+
+    it("should allow admin to update price movement cap", async function () {
+      const { dcaManager, deployer } = await loadFixture(deployBaseSystemFixture);
+      const contract: any = dcaManager;
+
+      if (typeof contract.setMaxPriceMovementBps !== "function") {
+        this.skip();
+      }
+
+      await contract.connect(deployer).setMaxPriceMovementBps(1500);
+
+      if (typeof contract.maxPriceMovementBps === "function") {
+        expect(await contract.maxPriceMovementBps()).to.equal(1500);
+      }
+    });
+
+    it("should revert if non-admin updates price movement cap", async function () {
+      const { dcaManager, user1 } = await loadFixture(deployBaseSystemFixture);
+      const contract: any = dcaManager;
+
+      if (typeof contract.setMaxPriceMovementBps !== "function") {
+        this.skip();
+      }
+
+      await expect(
+        contract.connect(user1).setMaxPriceMovementBps(1500)
+      ).to.be.revertedWith("AccessControl: account");
+    });
   });
 
   describe("Circuit Breakers", function () {

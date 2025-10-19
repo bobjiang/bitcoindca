@@ -13,6 +13,10 @@ This document tells **AI code agents** exactly how to work in this repository wi
 
 If your change touches any on‑chain logic, **read** `/architecture.md` before coding. If your change modifies developer workflows, **update this file as well**.
 
+## Update docs and tests
+
+If any codes are updated, and requires to update documents, please update `./docs/` as well. The same rules are applied for the tests, if any new tests are needed, please add them in `./contracts/test/`.
+
 ---
 
 ## 1) Repository Map & Ownership
