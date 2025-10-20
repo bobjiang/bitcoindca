@@ -30,6 +30,8 @@ contract PositionStorage is Initializable, AccessControlUpgradeable, UUPSUpgrade
         bool exists;
     }
 
+    address public dcaManager;
+
     mapping(uint256 => PositionRecord) private _positions;
     mapping(address => uint256[]) private _positionsByOwner;
     mapping(uint256 => uint256) private _ownerIndex; // positionId -> index within owner's array (index + 1)
@@ -48,6 +50,7 @@ contract PositionStorage is Initializable, AccessControlUpgradeable, UUPSUpgrade
         uint64 endAt
     );
     event MetadataRemoved(uint256 indexed positionId);
+    event DcaManagerSet(address indexed dcaManager);
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -61,7 +64,19 @@ contract PositionStorage is Initializable, AccessControlUpgradeable, UUPSUpgrade
         _grantRole(Roles.DEFAULT_ADMIN, msg.sender);
     }
 
-    function setPositionMetadata(uint256 positionId, Metadata calldata metadata) external onlyRole(Roles.DEFAULT_ADMIN) {
+    modifier onlyDcaManager() {
+        require(msg.sender == dcaManager, "Not DCA manager");
+        _;
+    }
+
+    function setDcaManager(address _dcaManager) external onlyRole(Roles.DEFAULT_ADMIN) {
+        require(_dcaManager != address(0), "Invalid DCA manager");
+        require(dcaManager == address(0), "DCA manager already set");
+        dcaManager = _dcaManager;
+        emit DcaManagerSet(_dcaManager);
+    }
+
+    function setPositionMetadata(uint256 positionId, Metadata calldata metadata) external onlyDcaManager {
         require(positionId != 0, "Invalid position");
         require(metadata.owner != address(0), "Invalid owner");
 
@@ -92,7 +107,7 @@ contract PositionStorage is Initializable, AccessControlUpgradeable, UUPSUpgrade
         );
     }
 
-    function removePositionMetadata(uint256 positionId) external onlyRole(Roles.DEFAULT_ADMIN) {
+    function removePositionMetadata(uint256 positionId) external onlyDcaManager {
         PositionRecord storage record = _positions[positionId];
         require(record.exists, "Position missing");
 

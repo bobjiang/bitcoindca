@@ -84,9 +84,9 @@ export async function deployBaseSystemFixture() {
   );
   await positionNFT.waitForDeployment();
 
-  // Deploy Treasury
-  const Treasury = await ethers.getContractFactory("Treasury");
-  const treasuryContract = await Treasury.deploy(
+  // Deploy MockTreasury (placeholder until real Treasury is implemented)
+  const MockTreasury = await ethers.getContractFactory("MockTreasury");
+  const treasuryContract = await MockTreasury.deploy(
     [treasury.address],
     1, // 1 of 1 multisig for testing
     86400 // 1 day timelock

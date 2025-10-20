@@ -127,10 +127,12 @@ contract PriceOracle is AccessControl {
     function getTokenPrice(address token) public view returns (uint256 price, uint256 updatedAt) {
         PriceFeedConfig memory config = _priceFeeds[token];
         require(config.exists, "Feed missing");
-        return getChainlinkPrice(config.feed);
+        (price, updatedAt) = getChainlinkPrice(config.feed);
+        require(validatePriceStaleness(updatedAt), "Price data stale");
+        return (price, updatedAt);
     }
 
-    function validatePriceStaleness(uint256 timestamp) external view returns (bool) {
+    function validatePriceStaleness(uint256 timestamp) public view returns (bool) {
         if (timestamp > block.timestamp) {
             return true;
         }
@@ -151,7 +153,9 @@ contract PriceOracle is AccessControl {
         }
 
         uint256 diff = price1 > price2 ? price1 - price2 : price2 - price1;
-        uint256 deviationBps = (diff * MAX_BPS) / price1;
+        // Use larger price as denominator to ensure symmetric deviation calculation
+        uint256 base = price1 > price2 ? price1 : price2;
+        uint256 deviationBps = (diff * MAX_BPS) / base;
         return (deviationBps <= maxDeviationBps, deviationBps);
     }
 

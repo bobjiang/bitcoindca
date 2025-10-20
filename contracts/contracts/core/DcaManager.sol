@@ -115,6 +115,7 @@ contract DcaManager is
         uint256 quoteAmount,
         uint256 baseAmount
     );
+    event ActivePositionsReconciled(uint256 oldCount, uint256 newCount);
 
     // -----------------------------------------------------------------------
     // Structs
@@ -354,6 +355,11 @@ contract DcaManager is
 
         _persistMetadata(positionId);
 
+        // Add position to owner tracking arrays
+        _ownerPositions[params.owner].push(positionId);
+        _ownerPositionIndex[params.owner][positionId] = _ownerPositions[params.owner].length;
+        userPositionCount[params.owner] += 1;
+
         positionNFT.mint(params.owner, positionId);
         activeGlobalPositions += 1;
 
@@ -443,7 +449,9 @@ contract DcaManager is
 
         position.paused = false;
         position.pausedAt = 0;
-        position.emergencyUnlockAt = 0;
+        // Don't reset emergencyUnlockAt to prevent delay manipulation
+        // Once emergency delay starts, it persists until emergency withdrawal
+        // position.emergencyUnlockAt = 0;
 
         emit PositionResumed(positionId);
         _bumpExecNonce(positionId, position);
@@ -752,6 +760,14 @@ contract DcaManager is
         emit QuoteTokenAllowed(token, allowed);
     }
 
+    function reconcileActivePositions(uint256 newCount) external onlyRole(Roles.DEFAULT_ADMIN) {
+        // Admin function to fix activeGlobalPositions drift caused by expired positions
+        // Should only be used after careful off-chain calculation of actual active positions
+        uint256 oldCount = activeGlobalPositions;
+        activeGlobalPositions = newCount;
+        emit ActivePositionsReconciled(oldCount, newCount);
+    }
+
     // -----------------------------------------------------------------------
     // NFT Transfer Hook
     // -----------------------------------------------------------------------
@@ -770,6 +786,10 @@ contract DcaManager is
         if (to != address(0)) {
             if (from != address(0) && !position.paused) {
                 revert TransferNotAllowed();
+            }
+            // Prevent bypassing maxPositionsPerUser limit via transfers
+            if (userPositionCount[to] >= maxPositionsPerUser) {
+                revert MaxPositionsPerUserExceeded();
             }
             _ownerPositions[to].push(positionId);
             _ownerPositionIndex[to][positionId] = _ownerPositions[to].length;
@@ -812,12 +832,16 @@ contract DcaManager is
 
     function _removeOwnerPosition(address owner, uint256 positionId) private {
         uint256 indexPlusOne = _ownerPositionIndex[owner][positionId];
-        if (indexPlusOne == 0) {
-            return;
-        }
+        // Require position exists in owner's list to catch bugs early
+        require(indexPlusOne > 0, "Position not in owner list");
 
         uint256 index = indexPlusOne - 1;
         uint256[] storage list = _ownerPositions[owner];
+
+        // Verify data integrity before manipulation
+        require(index < list.length, "Index out of bounds");
+        require(list[index] == positionId, "Index corruption detected");
+
         uint256 lastIndex = list.length - 1;
 
         if (index != lastIndex) {
