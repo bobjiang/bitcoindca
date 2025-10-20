@@ -6,7 +6,13 @@ import {
   setupMockDEXs,
   setupTestBalances,
 } from "../helpers/mocks";
-import { createDefaultFeeConfig, ROLES } from "../helpers/constants";
+import {
+  createDefaultFeeConfig,
+  ROLES,
+  BTC_PRICE_USD,
+  ETH_PRICE_USD,
+  USDC_PRICE_USD,
+} from "../helpers/constants";
 
 /**
  * Test Fixtures
@@ -40,6 +46,21 @@ export async function deployBaseSystemFixture() {
     await tokens.usdc.getAddress(),
     await priceFeeds.usdcUsdFeed.getAddress()
   );
+  await priceOracle.addPriceFeed(
+    await tokens.weth.getAddress(),
+    await priceFeeds.ethUsdFeed.getAddress()
+  );
+
+  // Configure symbol aliases for convenience getters
+  await priceOracle.configureAliasString("BTC", await tokens.wbtc.getAddress());
+  await priceOracle.configureAliasString("WBTC", await tokens.wbtc.getAddress());
+  await priceOracle.configureAliasString("ETH", await tokens.weth.getAddress());
+  await priceOracle.configureAliasString("USDC", await tokens.usdc.getAddress());
+
+  // Seed reference prices used for confidence scoring
+  await priceOracle.setReferencePrice(await tokens.wbtc.getAddress(), BTC_PRICE_USD);
+  await priceOracle.setReferencePrice(await tokens.weth.getAddress(), ETH_PRICE_USD);
+  await priceOracle.setReferencePrice(await tokens.usdc.getAddress(), USDC_PRICE_USD);
 
   // Deploy PositionStorage
   const PositionStorage = await ethers.getContractFactory("PositionStorage");
@@ -81,10 +102,19 @@ export async function deployBaseSystemFixture() {
       await positionStorage.getAddress(),
       await priceOracle.getAddress(),
       await treasuryContract.getAddress(),
+      await tokens.wbtc.getAddress(),
     ],
     { kind: "uups" }
   );
   await dcaManager.waitForDeployment();
+
+  await positionNFT
+    .connect(deployer)
+    .setManager(await dcaManager.getAddress());
+
+  await dcaManager.connect(deployer).setQuoteTokenAllowed(await tokens.usdc.getAddress(), true);
+  await dcaManager.connect(deployer).setQuoteTokenAllowed(await tokens.dai.getAddress(), true);
+  await dcaManager.connect(deployer).setQuoteTokenAllowed(await tokens.usdt.getAddress(), true);
 
   // Deploy RouterManager
   const RouterManager = await ethers.getContractFactory("RouterManager");
@@ -160,6 +190,13 @@ async function deploySystemWithAdapters(options?: { registerAdapters?: boolean }
     usdc: base.tokens.usdc,
     weth: base.tokens.weth,
   });
+
+  await base.priceOracle.registerUniswapPool(
+    await base.tokens.usdc.getAddress(),
+    await base.tokens.wbtc.getAddress(),
+    3000,
+    await dexs.uniswapPool.getAddress()
+  );
 
   // Deploy Router Adapters
   const UniV3Adapter = await ethers.getContractFactory("UniV3Adapter");

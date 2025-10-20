@@ -18,6 +18,10 @@ async function deployDepositReentrancyFixture() {
     .connect(base.deployer)
     .addPriceFeed(await maliciousToken.getAddress(), await base.priceFeeds.usdcUsdFeed.getAddress());
 
+  await base.dcaManager
+    .connect(base.deployer)
+    .setQuoteTokenAllowed(await maliciousToken.getAddress(), true);
+
   const transferAmount = ethers.parseUnits("5000", 18);
   await maliciousToken.transfer(base.user1.address, transferAmount);
 

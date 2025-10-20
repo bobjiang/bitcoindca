@@ -207,7 +207,7 @@ describe("DcaManager", function () {
 
       await expect(
         dcaManager.connect(user1).createPosition(params)
-      ).to.be.revertedWith("Max positions per user exceeded");
+      ).to.be.revertedWithCustomError(dcaManager, "MaxPositionsPerUserExceeded");
     });
 
     it("should revert if position size below minimum", async function () {
@@ -242,7 +242,7 @@ describe("DcaManager", function () {
 
       await expect(
         dcaManager.connect(user1).createPosition(params)
-      ).to.be.revertedWith("Start time must be in future");
+      ).to.be.revertedWithCustomError(dcaManager, "InvalidParameter");
     });
 
     it("should revert if end time before start time", async function () {
@@ -261,7 +261,7 @@ describe("DcaManager", function () {
 
       await expect(
         dcaManager.connect(user1).createPosition(params)
-      ).to.be.revertedWith("End time must be after start time");
+      ).to.be.revertedWithCustomError(dcaManager, "InvalidParameter");
     });
 
     it("should revert if quote token is zero address", async function () {
@@ -273,7 +273,7 @@ describe("DcaManager", function () {
 
       await expect(
         dcaManager.connect(user1).createPosition(params)
-      ).to.be.revertedWith("Invalid quote token");
+      ).to.be.revertedWithCustomError(dcaManager, "QuoteTokenNotAllowed");
     });
 
     it("should revert if slippage exceeds maximum", async function () {
@@ -290,7 +290,7 @@ describe("DcaManager", function () {
 
       await expect(
         dcaManager.connect(user1).createPosition(params)
-      ).to.be.revertedWith("Slippage exceeds maximum");
+      ).to.be.revertedWithCustomError(dcaManager, "SlippageTooHigh");
     });
   });
 
@@ -338,7 +338,7 @@ describe("DcaManager", function () {
         dcaManager
           .connect(user2)
           .deposit(positionId, await tokens.usdc.getAddress(), depositAmount)
-      ).to.be.revertedWith("Not position owner");
+      ).to.be.revertedWithCustomError(dcaManager, "NotOwner");
     });
 
     it("should revert if depositing zero amount", async function () {
@@ -348,7 +348,7 @@ describe("DcaManager", function () {
         dcaManager
           .connect(user1)
           .deposit(positionId, await tokens.usdc.getAddress(), 0)
-      ).to.be.revertedWith("Amount must be greater than zero");
+      ).to.be.revertedWithCustomError(dcaManager, "InvalidAmount");
     });
 
     it("should revert if position does not exist", async function () {
@@ -358,7 +358,7 @@ describe("DcaManager", function () {
         dcaManager
           .connect(user1)
           .deposit(999, await tokens.usdc.getAddress(), ethers.parseUnits("100", 6))
-      ).to.be.revertedWith("Position does not exist");
+      ).to.be.revertedWithCustomError(dcaManager, "PositionNotFound");
     });
 
     it("should revert when contract is paused", async function () {
@@ -439,7 +439,7 @@ describe("DcaManager", function () {
             ethers.parseUnits("100", 6),
             user2.address
           )
-      ).to.be.revertedWith("Not position owner");
+      ).to.be.revertedWithCustomError(dcaManager, "NotOwner");
     });
 
     it("should revert if insufficient balance", async function () {
@@ -459,7 +459,7 @@ describe("DcaManager", function () {
             balance + ethers.parseUnits("1", 6),
             user1.address
           )
-      ).to.be.revertedWith("Insufficient balance");
+      ).to.be.revertedWithCustomError(dcaManager, "InsufficientQuoteBalance");
     });
 
     it("should revert if recipient is zero address", async function () {
@@ -474,7 +474,7 @@ describe("DcaManager", function () {
             ethers.parseUnits("100", 6),
             ZERO_ADDRESS
           )
-      ).to.be.revertedWith("Invalid recipient");
+      ).to.be.revertedWithCustomError(dcaManager, "InvalidParameter");
     });
   });
 
@@ -494,8 +494,9 @@ describe("DcaManager", function () {
       it("should revert if non-owner tries to pause", async function () {
         const { dcaManager, positionId, user2 } = await loadFixture(deployWithPositionFixture);
 
-        await expect(dcaManager.connect(user2).pause(positionId)).to.be.revertedWith(
-          "Not position owner"
+        await expect(dcaManager.connect(user2).pause(positionId)).to.be.revertedWithCustomError(
+          dcaManager,
+          "NotOwner"
         );
       });
 
@@ -504,8 +505,9 @@ describe("DcaManager", function () {
 
         await dcaManager.connect(user1).pause(positionId);
 
-        await expect(dcaManager.connect(user1).pause(positionId)).to.be.revertedWith(
-          "Position already paused"
+        await expect(dcaManager.connect(user1).pause(positionId)).to.be.revertedWithCustomError(
+          dcaManager,
+          "PositionAlreadyPaused"
         );
       });
     });
@@ -527,8 +529,9 @@ describe("DcaManager", function () {
       it("should revert if position not paused", async function () {
         const { dcaManager, positionId, user1 } = await loadFixture(deployWithPositionFixture);
 
-        await expect(dcaManager.connect(user1).resume(positionId)).to.be.revertedWith(
-          "Position not paused"
+        await expect(dcaManager.connect(user1).resume(positionId)).to.be.revertedWithCustomError(
+          dcaManager,
+          "PositionNotPaused"
         );
       });
     });
@@ -571,7 +574,7 @@ describe("DcaManager", function () {
 
         await expect(
           dcaManager.connect(user2).modify(positionId, modifyParams)
-        ).to.be.revertedWith("Not position owner");
+        ).to.be.revertedWithCustomError(dcaManager, "NotOwner");
       });
     });
 
@@ -631,7 +634,7 @@ describe("DcaManager", function () {
 
       await expect(
         dcaManager.connect(user1).emergencyWithdraw(positionId)
-      ).to.be.revertedWith("Position must be paused");
+      ).to.be.revertedWithCustomError(dcaManager, "PositionNotPaused");
     });
 
     it("should revert if delay not passed", async function () {
@@ -639,9 +642,13 @@ describe("DcaManager", function () {
 
       await dcaManager.connect(user1).pause(positionId);
 
+      const position = await dcaManager.getPosition(positionId);
+
       await expect(
         dcaManager.connect(user1).emergencyWithdraw(positionId)
-      ).to.be.revertedWith("Emergency delay not passed");
+      )
+        .to.be.revertedWithCustomError(dcaManager, "EmergencyDelayPending")
+        .withArgs(position.emergencyUnlockAt);
     });
   });
 

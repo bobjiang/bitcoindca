@@ -307,6 +307,8 @@ export async function setupMockDEXs(
     deployer
   );
 
+  await uniswapRouter.registerPool(await uniswapPool.getAddress());
+
   return {
     uniswapRouter,
     cowSettlement,

@@ -556,8 +556,9 @@ describe("Security: DOS Protection", function () {
       );
 
       // Only owner should be able to pause
-      await expect(dcaManager.connect(user2).pause(positionId)).to.be.revertedWith(
-        "Not position owner"
+      await expect(dcaManager.connect(user2).pause(positionId)).to.be.revertedWithCustomError(
+        dcaManager,
+        "NotOwner"
       );
 
       // Owner can pause
@@ -581,7 +582,7 @@ describe("Security: DOS Protection", function () {
       // Non-owner cannot modify
       await expect(
         dcaManager.connect(user2).modify(positionId, modifyParams)
-      ).to.be.revertedWith("Not position owner");
+      ).to.be.revertedWithCustomError(dcaManager, "NotOwner");
     });
 
     it("should prevent emergency withdrawal abuse", async function () {
@@ -592,15 +593,19 @@ describe("Security: DOS Protection", function () {
       // Emergency withdraw should require position to be paused
       await expect(
         dcaManager.connect(user1).emergencyWithdraw(positionId)
-      ).to.be.revertedWith("Position must be paused");
+      ).to.be.revertedWithCustomError(dcaManager, "PositionNotPaused");
 
       // Pause position
       await dcaManager.connect(user1).pause(positionId);
 
       // Should still require waiting period
+      const pausedPosition = await dcaManager.getPosition(positionId);
+
       await expect(
         dcaManager.connect(user1).emergencyWithdraw(positionId)
-      ).to.be.revertedWith("Emergency delay not passed");
+      )
+        .to.be.revertedWithCustomError(dcaManager, "EmergencyDelayPending")
+        .withArgs(pausedPosition.emergencyUnlockAt);
     });
   });
 

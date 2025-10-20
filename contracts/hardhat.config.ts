@@ -1,4 +1,4 @@
-import { HardhatUserConfig } from "hardhat/config";
+import { HardhatUserConfig, task } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 import "@nomicfoundation/hardhat-verify";
 import "@openzeppelin/hardhat-upgrades";
@@ -6,8 +6,23 @@ import "hardhat-deploy";
 import "hardhat-gas-reporter";
 import "solidity-coverage";
 import * as dotenv from "dotenv";
+import path from "path";
+import { TASK_COMPILE_SOLIDITY_GET_SOLC_BUILD } from "hardhat/builtin-tasks/task-names";
 
 dotenv.config();
+
+task(TASK_COMPILE_SOLIDITY_GET_SOLC_BUILD, async (args, _env, runSuper) => {
+  if (args.solcVersion === "0.8.24") {
+    const compilerPath = path.join(__dirname, "compilers", "soljson-v0.8.24+commit.e11b9ed9.js");
+    return {
+      compilerPath,
+      isSolcJs: true,
+      version: args.solcVersion,
+      longVersion: "0.8.24+commit.e11b9ed9",
+    };
+  }
+  return runSuper(args);
+});
 
 const config: HardhatUserConfig = {
   solidity: {

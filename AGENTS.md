@@ -13,9 +13,12 @@ This document tells **AI code agents** exactly how to work in this repository wi
 
 If your change touches any on‑chain logic, **read** `/architecture.md` before coding. If your change modifies developer workflows, **update this file as well**.
 
-## Update docs and tests
+## Coding rules
 
-If any codes are updated, and requires to update documents, please update `./docs/` as well. The same rules are applied for the tests, if any new tests are needed, please add them in `./contracts/test/`.
+- all the solidity codes are required to reviewed by following the file `/contracts/security/Contract-Code-Review.md`
+- the solidity codes must follow the existing test suits `/contracts/test/`
+- any code changes are required to documentate, please update `./docs/` 
+- if any new tests are required to add, change the test suits `/contracts/test/`
 
 ---
 
@@ -33,6 +36,9 @@ If any codes are updated, and requires to update documents, please update `./doc
 ## 2) Commands You Can Safely Run
 
 From repo root:
+
+Note: if you need to test the behavior of smart contract, remember to set the env 
+`RUN_DCA_BEHAVIOR_TESTS=true`
 
 ```bash
 pnpm install               # install workspace deps
