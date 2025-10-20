@@ -783,19 +783,22 @@ contract DcaManager is
             }
         }
 
-        if (to != address(0)) {
-            if (from != address(0) && !position.paused) {
-                revert TransferNotAllowed();
-            }
-            // Prevent bypassing maxPositionsPerUser limit via transfers
-            if (userPositionCount[to] >= maxPositionsPerUser) {
-                revert MaxPositionsPerUserExceeded();
-            }
-            _ownerPositions[to].push(positionId);
-            _ownerPositionIndex[to][positionId] = _ownerPositions[to].length;
-            userPositionCount[to] += 1;
-            position.owner = to;
+        if (to == address(0)) {
+            return;
         }
+
+        if (from != address(0) && !position.paused) {
+            revert TransferNotAllowed();
+        }
+
+        if (userPositionCount[to] >= maxPositionsPerUser) {
+            revert MaxPositionsPerUserExceeded();
+        }
+
+        _ownerPositions[to].push(positionId);
+        _ownerPositionIndex[to][positionId] = _ownerPositions[to].length;
+        userPositionCount[to] += 1;
+        position.owner = to;
 
         _persistMetadata(positionId);
     }

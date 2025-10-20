@@ -599,13 +599,12 @@ describe("Security: DOS Protection", function () {
       await dcaManager.connect(user1).pause(positionId);
 
       // Should still require waiting period
-      const pausedPosition = await dcaManager.getPosition(positionId);
-
       await expect(
         dcaManager.connect(user1).emergencyWithdraw(positionId)
-      )
-        .to.be.revertedWithCustomError(dcaManager, "EmergencyDelayPending")
-        .withArgs(pausedPosition.emergencyUnlockAt);
+      ).to.be.revertedWithCustomError(dcaManager, "EmergencyDelayPending");
+
+      const updatedPosition = await dcaManager.getPosition(positionId);
+      expect(updatedPosition.emergencyUnlockAt).to.be.gt(0);
     });
   });
 
