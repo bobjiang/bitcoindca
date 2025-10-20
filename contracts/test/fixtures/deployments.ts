@@ -84,14 +84,24 @@ export async function deployBaseSystemFixture() {
   );
   await positionNFT.waitForDeployment();
 
-  // Deploy MockTreasury (placeholder until real Treasury is implemented)
-  const MockTreasury = await ethers.getContractFactory("MockTreasury");
-  const treasuryContract = await MockTreasury.deploy(
+  // Deploy Treasury
+  const Treasury = await ethers.getContractFactory("Treasury");
+  const treasuryContract = await Treasury.deploy(
+    2 * 24 * 60 * 60,
     [treasury.address],
-    1, // 1 of 1 multisig for testing
-    86400 // 1 day timelock
+    [treasury.address],
+    deployer.address
   );
   await treasuryContract.waitForDeployment();
+
+  // Configure initial roles expected by the tests
+  await treasuryContract.connect(deployer).grantRole(
+    await treasuryContract.PAUSER_ROLE(),
+    deployer.address
+  );
+  await treasuryContract.connect(deployer).initialize(
+    createDefaultFeeConfig(treasury.address)
+  );
 
   // Deploy DcaManager
   const DcaManager = await ethers.getContractFactory("DcaManager");
@@ -131,6 +141,10 @@ export async function deployBaseSystemFixture() {
     await priceOracle.getAddress()
   );
   await executorContract.waitForDeployment();
+  await deployer.sendTransaction({
+    to: await executorContract.getAddress(),
+    value: ethers.parseEther("10"),
+  });
 
   // Grant roles
   await positionNFT.grantRole(
@@ -205,17 +219,42 @@ async function deploySystemWithAdapters(options?: { registerAdapters?: boolean }
   );
   await uniV3Adapter.waitForDeployment();
 
+  await uniV3Adapter
+    .connect(base.deployer)
+    .registerPool(
+      await base.tokens.usdc.getAddress(),
+      await base.tokens.wbtc.getAddress(),
+      3000,
+      await dexs.uniswapPool.getAddress()
+    );
+
   const CoWAdapter = await ethers.getContractFactory("CoWAdapter");
   const cowAdapter = await CoWAdapter.deploy(
     await dexs.cowSettlement.getAddress()
   );
   await cowAdapter.waitForDeployment();
 
+  await cowAdapter
+    .connect(base.deployer)
+    .setSupportedPair(
+      await base.tokens.usdc.getAddress(),
+      await base.tokens.wbtc.getAddress(),
+      true
+    );
+
   const OneInchAdapter = await ethers.getContractFactory("OneInchAdapter");
   const oneInchAdapter = await OneInchAdapter.deploy(
     await dexs.oneInchRouter.getAddress()
   );
   await oneInchAdapter.waitForDeployment();
+
+  await oneInchAdapter
+    .connect(base.deployer)
+    .setSupportedPair(
+      await base.tokens.usdc.getAddress(),
+      await base.tokens.wbtc.getAddress(),
+      true
+    );
 
   if (options?.registerAdapters !== false) {
     await base.routerManager.addRouterAdapter(
@@ -326,6 +365,8 @@ export async function deployWithPositionFixture() {
     .connect(base.user1)
     .deposit(positionId, await base.tokens.usdc.getAddress(), ethers.parseUnits("1000", 6));
 
+  await base.executorContract.connect(base.deployer).trackPosition(positionId);
+
   return {
     ...base,
     positionId,
@@ -424,6 +465,9 @@ export async function deployMultiPositionFixture() {
 
     if (event) {
       positionIds.push(event.args.positionId);
+      await base.executorContract
+        .connect(base.deployer)
+        .trackPosition(event.args.positionId);
 
       // Deposit funds
       const depositAmount = pos.isBuy

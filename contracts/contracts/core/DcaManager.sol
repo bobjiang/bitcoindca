@@ -588,6 +588,26 @@ contract DcaManager is
     // Executor Hooks
     // -----------------------------------------------------------------------
 
+    function executorTransferTo(uint256 positionId, address token, uint256 amount, address to)
+        external
+        onlyRole(Roles.EXECUTOR)
+        nonReentrant
+    {
+        if (to == address(0)) revert InvalidParameter();
+        Position storage position = _positions[positionId];
+        if (!position.exists) revert PositionNotFound();
+
+        if (token == position.quoteToken) {
+            if (_quoteBalances[positionId] < amount) revert InsufficientQuoteBalance();
+        } else if (token == position.baseToken) {
+            if (_baseBalances[positionId] < amount) revert InsufficientBaseBalance();
+        } else {
+            revert QuoteTokenNotAllowed();
+        }
+
+        IERC20(token).safeTransfer(to, amount);
+    }
+
     function onFill(
         uint256 positionId,
         uint256 quoteUsed,

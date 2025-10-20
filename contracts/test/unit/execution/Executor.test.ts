@@ -476,20 +476,16 @@ describe("Executor", function () {
     });
 
     it("should collect protocol fee", async function () {
-      const { executorContract, treasuryContract, positionId, createParams, executor } =
+      const { executorContract, treasuryContract, tokens, positionId, createParams, executor } =
         await loadFixture(deployWithPositionFixture);
 
       await advanceTimeTo(createParams.startAt);
 
-      const treasuryBalanceBefore = await ethers.provider.getBalance(
-        await treasuryContract.getAddress()
-      );
+      const treasuryBalanceBefore = await tokens.usdc.balanceOf(await treasuryContract.getAddress());
 
       await executorContract.connect(executor).execute(positionId);
 
-      const treasuryBalanceAfter = await ethers.provider.getBalance(
-        await treasuryContract.getAddress()
-      );
+      const treasuryBalanceAfter = await tokens.usdc.balanceOf(await treasuryContract.getAddress());
 
       expect(treasuryBalanceAfter).to.be.gt(treasuryBalanceBefore);
     });
