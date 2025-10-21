@@ -1,7 +1,7 @@
 ---
 title: Events & Telemetry
 sidebar_label: Events
-description: Catalogue of BitcoinDCA contract events, their payloads, and usage in analytics pipelines.
+description: Catalogue of DCA Crypto contract events, their payloads, and usage in analytics pipelines.
 ---
 
 # Events & Telemetry

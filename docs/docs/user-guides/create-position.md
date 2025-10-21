@@ -1,7 +1,7 @@
 ---
 title: Create a Position
 sidebar_label: Create a Position
-description: Step-by-step instructions for creating and funding a new BitcoinDCA strategy from the web app or Safe App.
+description: Step-by-step instructions for creating and funding a new DCA Crypto strategy from the web app or Safe App.
 ---
 
 # Create a Position
@@ -10,7 +10,7 @@ This guide walks end-users through the full creation flow for a recurring DCA st
 
 ## 1. Connect your wallet
 
-- Open the BitcoinDCA dashboard and connect with RainbowKit (MetaMask, Rabby, WalletConnect, Ledger, or Safe).
+- Open the DCA Crypto dashboard and connect with RainbowKit (MetaMask, Rabby, WalletConnect, Ledger, or Safe).
 - If you plan to act through a Safe, ensure the Safe owner approvals are configured. Safe mode enforces additional checks (see [`frontend` Safe guard](../developer/integration-guide.md#safe-app-considerations)).
 
 ## 2. Choose strategy direction

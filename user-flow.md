@@ -482,4 +482,4 @@ Emergency response includes automatic pausing, user notifications, investigation
 - **Gelato Network**: Backup keeper services
 - **Monitoring**: Sentry for error tracking, PostHog for analytics
 
-This comprehensive user flow design ensures a smooth, secure, and user-friendly experience for Bitcoin DCA operations while maintaining the highest security standards and MEV protection.
+This comprehensive user flow design ensures a smooth, secure, and user-friendly experience for DCA Crypto operations while maintaining the highest security standards and MEV protection.

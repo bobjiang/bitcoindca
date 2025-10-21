@@ -1,7 +1,7 @@
 {
-  "name": "bitcoin-dca-contracts",
+  "name": "dca-crypto-contracts",
   "version": "0.1.0",
-  "description": "Smart contracts for Bitcoin DCA",
+  "description": "Smart contracts for DCA Crypto",
   "scripts": {
     "compile": "hardhat compile",
     "test": "hardhat test",

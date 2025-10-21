@@ -1,12 +1,12 @@
 ---
 title: Architecture Overview
 sidebar_label: Architecture
-description: High-level view of contracts, automation, routing, and off-chain components that make up BitcoinDCA.
+description: High-level view of contracts, automation, routing, and off-chain components that make up DCA Crypto.
 ---
 
 # Architecture Overview
 
-BitcoinDCA is a layered system that harmonises on-chain smart contracts with off-chain automation and analytics. This page condenses `architecture.md` while linking to implementation specifics.
+DCA Crypto is a layered system that harmonises on-chain smart contracts with off-chain automation and analytics. This page condenses `architecture.md` while linking to implementation specifics.
 
 ## Component map
 
@@ -60,4 +60,4 @@ BitcoinDCA is a layered system that harmonises on-chain smart contracts with off
 - [Smart Contract Reference](./smart-contracts.md)
 - [Integration Guide](./integration-guide.md)
 - [Testing Playbooks](./testing.md)
-- Root documents: [`architecture.md`](https://github.com/bobjiang/bitcoindca/blob/main/architecture.md), [`user-flow.md`](https://github.com/bobjiang/bitcoindca/blob/main/user-flow.md), [`AGENTS.md`](https://github.com/bobjiang/bitcoindca/blob/main/AGENTS.md)
+- Root documents: [`architecture.md`](https://github.com/bobjiang/dcacrypto/blob/main/architecture.md), [`user-flow.md`](https://github.com/bobjiang/dcacrypto/blob/main/user-flow.md), [`AGENTS.md`](https://github.com/bobjiang/dcacrypto/blob/main/AGENTS.md)

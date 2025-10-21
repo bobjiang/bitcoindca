@@ -1,6 +1,6 @@
-# Bitcoin DCA
+# DCA Crypto
 
-Non-custodial automated Dollar Cost Averaging (DCA) for WBTC on Ethereum.
+Non-custodial automated Dollar Cost Averaging (DCA) for crypto assets on Ethereum.
 
 ## Project Structure
 

@@ -1,14 +1,14 @@
 ---
 title: FAQ
 sidebar_label: FAQ
-description: Frequently asked questions about BitcoinDCA for both end-users and developers.
+description: Frequently asked questions about DCA Crypto for both end-users and developers.
 ---
 
 # Frequently Asked Questions
 
 ## General
 
-**Is BitcoinDCA custodial?**  
+**Is DCA Crypto custodial?**  
 No. Funds stay in smart contracts controlled by your wallet or Safe. You can withdraw or trigger emergency exits at any time.
 
 **Which assets are supported?**  

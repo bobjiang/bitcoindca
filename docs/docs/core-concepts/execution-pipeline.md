@@ -6,7 +6,7 @@ description: Follow the end-to-end flow from keeper scheduling through guard val
 
 # Execution Pipeline
 
-BitcoinDCA relies on a layered automation stack to guarantee timely execution while prioritising safety and MEV resistance.
+DCA Crypto relies on a layered automation stack to guarantee timely execution while prioritising safety and MEV resistance.
 
 ## Schedule flow
 

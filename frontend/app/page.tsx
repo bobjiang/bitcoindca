@@ -12,9 +12,9 @@ export default function Home() {
     <main className="flex min-h-screen flex-col items-center bg-background py-16">
       <div className="w-full max-w-6xl px-6">
         <header className="text-center">
-          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Bitcoin DCA</h1>
+          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">DCA Crypto</h1>
           <p className="mt-3 text-lg text-muted-foreground">
-            Non-custodial automated DCA for WBTC and ETH with venue-aware execution, price guards, and Safe support.
+            Non-custodial automated DCA for crypto assets with venue-aware execution, price guards, and Safe support.
           </p>
         </header>
 

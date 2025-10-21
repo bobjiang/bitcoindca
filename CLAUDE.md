@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Bitcoin (WBTC) and Ethereum (ETH) Dollar Cost Averaging (DCA) application. The repository is currently in its initial state with the requirements.
+This is a crypto Dollar Cost Averaging (DCA) application supporting WBTC, ETH, and other crypto assets. The repository is currently in its initial state with the requirements.
 
-# Bitcoin DCA on Ethereum — Merged Requirements (v0.3)
+# DCA Crypto on Ethereum — Merged Requirements (v0.3)
 
 ## 0. Goals & Scope
 

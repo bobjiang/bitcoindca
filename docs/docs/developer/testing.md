@@ -1,12 +1,12 @@
 ---
 title: Testing Playbooks
 sidebar_label: Testing
-description: Guidance on running, extending, and interpreting the BitcoinDCA smart contract and frontend test suites.
+description: Guidance on running, extending, and interpreting the DCA Crypto smart contract and frontend test suites.
 ---
 
 # Testing Playbooks
 
-BitcoinDCA enforces strict testing requirements for every public/external change. Follow this guide to run existing suites and expand coverage.
+DCA Crypto enforces strict testing requirements for every public/external change. Follow this guide to run existing suites and expand coverage.
 
 ## Test suites
 

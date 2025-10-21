@@ -1,7 +1,7 @@
 ---
 title: API Reference
 sidebar_label: API Reference
-description: Public contract APIs and key parameters for integrating with BitcoinDCA. All signatures originate from ABI tests in the repository.
+description: Public contract APIs and key parameters for integrating with DCA Crypto. All signatures originate from ABI tests in the repository.
 ---
 
 # API Reference

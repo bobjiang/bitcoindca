@@ -1,7 +1,7 @@
 ---
 title: Getting Started
 sidebar_label: Getting Started
-description: Set up BitcoinDCA as an end-user or developer, including wallet requirements, environment configuration, and first-time deployment steps.
+description: Set up DCA Crypto as an end-user or developer, including wallet requirements, environment configuration, and first-time deployment steps.
 ---
 
 import Tabs from '@theme/Tabs';
@@ -20,7 +20,7 @@ Use this guide to configure your wallet, fund the protocol, or bootstrap a devel
 
 ## Environment selection
 
-BitcoinDCA supports the following environments:
+DCA Crypto supports the following environments:
 
 - **Mainnet** — production execution with live routing.  
 - **Testnets** — fork-based testing driven by the Hardhat suite (`pnpm -F contracts test`).  
@@ -52,8 +52,8 @@ Callouts inside the UI surface guard failures (`PRICE_DEVIATION`, `GAS_CAP`, `DE
 1. **Clone and install**
 
    ```bash
-   git clone https://github.com/bobjiang/bitcoindca.git
-   cd bitcoindca
+   git clone https://github.com/bobjiang/dcacrypto.git
+   cd dcacrypto
    pnpm install
    ```
 

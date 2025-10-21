@@ -5,8 +5,8 @@ import type * as Preset from '@docusaurus/preset-classic';
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
 const config: Config = {
-  title: 'BitcoinDCA Docs',
-  tagline: 'Non-custodial automated dollar cost averaging for WBTC and ETH',
+  title: 'DCA Crypto Docs',
+  tagline: 'Non-custodial automated dollar cost averaging for crypto assets',
   favicon: 'img/favicon.ico',
 
   // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
@@ -15,7 +15,7 @@ const config: Config = {
   },
 
   // Set the production url of your site here
-  url: 'https://docs.bitcoindca.xyz',
+  url: 'https://docs.dcacrypto.xyz',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: '/docs/',
@@ -23,7 +23,7 @@ const config: Config = {
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
   organizationName: 'bobjiang',
-  projectName: 'bitcoindca',
+  projectName: 'dcacrypto',
 
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
@@ -43,7 +43,7 @@ const config: Config = {
         docs: {
           routeBasePath: '/',
           sidebarPath: './sidebars.ts',
-          editUrl: 'https://github.com/bobjiang/bitcoindca/tree/main/docs',
+          editUrl: 'https://github.com/bobjiang/dcacrypto/tree/main/docs',
         },
         blog: false,
         theme: {
@@ -67,7 +67,7 @@ const config: Config = {
 
   themeConfig: {
     metadata: [
-      {name: 'keywords', content: 'BitcoinDCA, DCA, DeFi, Ethereum, WBTC, automated trading, Chainlink'},
+      {name: 'keywords', content: 'DCA Crypto, DCA, DeFi, Ethereum, WBTC, automated trading, Chainlink'},
       {name: 'twitter:card', content: 'summary_large_image'},
     ],
     image: 'img/docusaurus-social-card.jpg',
@@ -75,9 +75,9 @@ const config: Config = {
       respectPrefersColorScheme: true,
     },
     navbar: {
-      title: 'BitcoinDCA',
+      title: 'DCA Crypto',
       logo: {
-        alt: 'BitcoinDCA',
+        alt: 'DCA Crypto',
         src: 'img/logo.svg',
       },
       items: [
@@ -88,7 +88,7 @@ const config: Config = {
           label: 'Documentation',
         },
         {
-          href: 'https://github.com/bobjiang/bitcoindca',
+          href: 'https://github.com/bobjiang/dcacrypto',
           label: 'GitHub',
           position: 'right',
         },
@@ -128,16 +128,16 @@ const config: Config = {
           items: [
             {
               label: 'Repository',
-              href: 'https://github.com/bobjiang/bitcoindca',
+              href: 'https://github.com/bobjiang/dcacrypto',
             },
             {
               label: 'Community Chat',
-              href: 'https://discord.gg/bitcoindca',
+              href: 'https://discord.gg/dcacrypto',
             },
           ],
         },
       ],
-      copyright: `© ${new Date().getFullYear()} BitcoinDCA Contributors`,
+      copyright: `© ${new Date().getFullYear()} DCA Crypto Contributors`,
     },
     prism: {
       theme: prismThemes.github,

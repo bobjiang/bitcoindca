@@ -1,7 +1,7 @@
 ---
 title: Glossary
 sidebar_label: Glossary
-description: Definitions of recurring BitcoinDCA terminology, guard parameters, and contract components.
+description: Definitions of recurring DCA Crypto terminology, guard parameters, and contract components.
 ---
 
 # Glossary

@@ -7,8 +7,8 @@ import { cn } from "@/lib/utils";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Bitcoin DCA - Automated Dollar Cost Averaging",
-  description: "Non-custodial automated DCA for WBTC on Ethereum",
+  title: "DCA Crypto - Automated Dollar Cost Averaging",
+  description: "Non-custodial automated DCA for crypto assets on Ethereum",
 };
 
 export default function RootLayout({

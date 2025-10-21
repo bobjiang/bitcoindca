@@ -1,12 +1,12 @@
 ---
 title: Security Controls
 sidebar_label: Security Controls
-description: Review the guardrails, circuit breakers, and operational procedures that protect BitcoinDCA users and liquidity.
+description: Review the guardrails, circuit breakers, and operational procedures that protect DCA Crypto users and liquidity.
 ---
 
 # Security Controls
 
-Security in BitcoinDCA is anchored around deterministic guardrails, rigorous testing, and multi-venue MEV mitigation. This page aligns with the invariants defined in `AGENTS.md` §5.
+Security in DCA Crypto is anchored around deterministic guardrails, rigorous testing, and multi-venue MEV mitigation. This page aligns with the invariants defined in `AGENTS.md` §5.
 
 ## Guard categories
 
@@ -64,4 +64,4 @@ Roles inherit from OpenZeppelin `AccessControl` with explicit revocation flows. 
 4. **Recover** — When safe, resume automation or allow users to trigger `emergencyWithdraw`.
 5. **Post-mortem** — Document incident in `/docs/user-flow.md` (root) and update relevant runbooks.
 
-Adhering to these processes keeps BitcoinDCA resilient even during market stress or infrastructure outages.
+Adhering to these processes keeps DCA Crypto resilient even during market stress or infrastructure outages.

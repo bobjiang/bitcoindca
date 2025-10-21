@@ -11,7 +11,7 @@ import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 /**
  * @title Treasury
  * @notice Handles fee collection, distribution and timelocked withdrawals for
- *         the Bitcoin DCA protocol. The implementation intentionally mirrors
+ *         the DCA Crypto protocol. The implementation intentionally mirrors
  *         the behaviour asserted in the comprehensive unit test suite.
  */
 contract Treasury is TimelockController, Pausable, ReentrancyGuard {

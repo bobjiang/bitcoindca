@@ -1,12 +1,12 @@
 ---
 title: SDKs & Tooling
 sidebar_label: SDKs & Tools
-description: Explore the developer tooling ecosystem around BitcoinDCA, including TypeScript SDK patterns, Hardhat helpers, and CLI utilities.
+description: Explore the developer tooling ecosystem around DCA Crypto, including TypeScript SDK patterns, Hardhat helpers, and CLI utilities.
 ---
 
 # SDKs & Tooling
 
-BitcoinDCA does not ship a dedicated SDK package yet, but the repository exposes reusable utilities across the monorepo.
+DCA Crypto does not ship a dedicated SDK package yet, but the repository exposes reusable utilities across the monorepo.
 
 ## TypeScript / JavaScript
 

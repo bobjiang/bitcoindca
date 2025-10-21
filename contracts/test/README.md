@@ -1,6 +1,6 @@
-# Bitcoin DCA Smart Contract Test Suite
+# DCA Crypto Smart Contract Test Suite
 
-Comprehensive test suite for the Bitcoin DCA smart contract system using Hardhat, Mocha, and Chai.
+Comprehensive test suite for the DCA Crypto smart contract system using Hardhat, Mocha, and Chai.
 
 ## Table of Contents
 
@@ -14,7 +14,7 @@ Comprehensive test suite for the Bitcoin DCA smart contract system using Hardhat
 
 ## Overview
 
-This test suite provides comprehensive coverage of all smart contracts in the Bitcoin DCA system:
+This test suite provides comprehensive coverage of all smart contracts in the DCA Crypto system:
 
 - **Unit Tests**: Test individual contract functionality in isolation
 - **Integration Tests**: Test interactions between multiple contracts

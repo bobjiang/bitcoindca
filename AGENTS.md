@@ -1,5 +1,5 @@
 
-# AGENTS.md — Working Rules for Code Agents (Claude/ChatGPT/Cursor) in `bitcoindca`
+# AGENTS.md — Working Rules for Code Agents (Claude/ChatGPT/Cursor) in `dcacrypto`
 
 This document tells **AI code agents** exactly how to work in this repository without breaking things. It merges and normalizes guidance from `CLAUDE.md` and `architecture.md` so you don’t have to cross‑reference multiple files.
 

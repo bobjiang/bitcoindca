@@ -8,8 +8,9 @@ export function WalletConnect() {
   const { address, chain, isConnecting, isReconnecting } = useAccount();
   const { data: balance, isLoading: isBalanceLoading } = useBalance({
     address,
-    enabled: Boolean(address),
-    watch: true,
+    query: {
+      enabled: Boolean(address),
+    },
   });
 
   return (
@@ -22,11 +23,6 @@ export function WalletConnect() {
             <span className="text-sm text-muted-foreground">Network</span>
             <span className="font-medium">
               {chain?.name || "Unknown"}
-              {chain?.unsupported ? (
-                <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
-                  Unsupported
-                </span>
-              ) : null}
             </span>
           </div>
 

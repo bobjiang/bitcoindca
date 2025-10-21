@@ -1,6 +1,6 @@
-# Bitcoin DCA - Setup Guide
+# DCA Crypto - Setup Guide
 
-This guide will help you set up the Bitcoin DCA project from scratch.
+This guide will help you set up the DCA Crypto project from scratch.
 
 ## Prerequisites
 
@@ -79,7 +79,7 @@ pnpm frontend:dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser. You should see:
-- The Bitcoin DCA landing page
+- The DCA Crypto landing page
 - A "Connect Wallet" button (requires WalletConnect Project ID to function)
 
 ## Step 4: Configure shadcn/ui (Optional)

@@ -1,4 +1,4 @@
-# Bitcoin DCA Test Suite - Comprehensive Code Review
+# DCA Crypto Test Suite - Comprehensive Code Review
 
 ## Executive Summary
 

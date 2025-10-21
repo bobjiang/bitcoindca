@@ -1,7 +1,7 @@
 ---
 title: Manage Positions & Balances
 sidebar_label: Manage Positions
-description: Learn how to pause, resume, modify, and withdraw from BitcoinDCA positions with full guard awareness.
+description: Learn how to pause, resume, modify, and withdraw from DCA Crypto positions with full guard awareness.
 ---
 
 # Manage Positions & Balances

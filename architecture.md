@@ -1,6 +1,6 @@
-# Bitcoin DCA Architecture
+# DCA Crypto Architecture
 
-This document provides a comprehensive architecture overview of the Bitcoin DCA application, showing the interaction between smart contracts, keeper infrastructure, routing mechanisms, and user interfaces.
+This document provides a comprehensive architecture overview of the DCA Crypto application, showing the interaction between smart contracts, keeper infrastructure, routing mechanisms, and user interfaces.
 
 ## System Architecture Overview
 

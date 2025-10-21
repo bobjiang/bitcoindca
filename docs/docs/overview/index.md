@@ -1,20 +1,20 @@
 ---
-title: Welcome to BitcoinDCA
+title: Welcome to DCA Crypto
 sidebar_label: Introduction
 slug: /
-description: Learn what BitcoinDCA is, the problems it solves, and how the platform automates non-custodial dollar-cost averaging for WBTC and ETH.
+description: Learn what DCA Crypto is, the problems it solves, and how the platform automates non-custodial dollar-cost averaging for crypto assets.
 ---
 
-# BitcoinDCA Documentation
+# DCA Crypto Documentation
 
-BitcoinDCA is a non-custodial automation layer that runs disciplined dollar-cost averaging (DCA) strategies for WBTC and ETH using stablecoins (USDC by default). It routes trades across Uniswap v3, CoW Protocol, and 1inch, prioritising MEV-safe execution with Chainlink Automation as the primary scheduler and Gelato plus public execution as fallbacks.
+DCA Crypto is a non-custodial automation layer that runs disciplined dollar-cost averaging (DCA) strategies for crypto assets like WBTC and ETH using stablecoins (USDC by default). It routes trades across Uniswap v3, CoW Protocol, and 1inch, prioritising MEV-safe execution with Chainlink Automation as the primary scheduler and Gelato plus public execution as fallbacks.
 
 ## Who this guide is for
 
 - **End-users** who want predictable crypto exposure through recurring buys or sells with robust guardrails.
 - **Developers** who integrate the protocol, extend the smart contracts, or operate keeper infrastructure.
 
-## Why BitcoinDCA?
+## Why DCA Crypto?
 
 - **Non-custodial:** Funds remain in user-controlled smart contract positions secured by PositionNFTs.
 - **Execution quality:** TWAP pricing, multi-oracle checks, depeg guards, and MEV-protected routing.
@@ -58,5 +58,5 @@ Use the persistent left navigation or the global search (press `/`) to jump to s
 ## Staying up to date
 
 - Track protocol changes in `CHANGELOG.md` (root of the Git repository).
-- Watch the [`contracts/test`](https://github.com/bobjiang/bitcoindca/tree/main/contracts/test) suite for new behaviours and edge cases.
+- Watch the [`contracts/test`](https://github.com/bobjiang/dcacrypto/tree/main/contracts/test) suite for new behaviours and edge cases.
 - Subscribe to the community channel for release notes and incident reports.

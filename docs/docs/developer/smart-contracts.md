@@ -1,7 +1,7 @@
 ---
 title: Smart Contract Reference
 sidebar_label: Smart Contracts
-description: Detailed reference for the BitcoinDCA smart contracts, including key functions, parameters, and interoperability notes.
+description: Detailed reference for the DCA Crypto smart contracts, including key functions, parameters, and interoperability notes.
 ---
 
 # Smart Contract Reference

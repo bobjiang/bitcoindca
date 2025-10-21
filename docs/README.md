@@ -1,6 +1,6 @@
-# BitcoinDCA Documentation Site
+# DCA Crypto Documentation Site
 
-The official documentation for BitcoinDCA is built with [Docusaurus 3](https://docusaurus.io/) and lives in this package. It is designed to serve two audiences:
+The official documentation for DCA Crypto is built with [Docusaurus 3](https://docusaurus.io/) and lives in this package. It is designed to serve two audiences:
 
 - **End users** who want to create and manage automated DCA strategies.
 - **Developers** who integrate, extend, or monitor the protocol.
@@ -9,7 +9,7 @@ The official documentation for BitcoinDCA is built with [Docusaurus 3](https://d
 
 - Node.js 20+
 - `pnpm` v8+
-- Access to the root `bitcoindca` repository (this package relies on shared configs)
+- Access to the root `dcacrypto` repository (this package relies on shared configs)
 
 Install dependencies from the repository root:
 

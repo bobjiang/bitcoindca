@@ -1,7 +1,7 @@
 ---
 title: Integration Guide
 sidebar_label: Integration Guide
-description: Implement keepers, monitoring, Safe App flows, and external notifications on top of BitcoinDCA.
+description: Implement keepers, monitoring, Safe App flows, and external notifications on top of DCA Crypto.
 ---
 
 # Integration Guide

@@ -1,12 +1,12 @@
 ---
 title: Position Model
 sidebar_label: Position Model
-description: Understand how BitcoinDCA represents strategies, balances, and limits inside the DcaManager contract.
+description: Understand how DCA Crypto represents strategies, balances, and limits inside the DcaManager contract.
 ---
 
 # Position Model
 
-Every strategy in BitcoinDCA is stored as a `Position` struct within the `DcaManager`. Each position is linked to a `PositionNFT` that grants ownership rights and governs authorisation for modifications.
+Every strategy in DCA Crypto is stored as a `Position` struct within the `DcaManager`. Each position is linked to a `PositionNFT` that grants ownership rights and governs authorisation for modifications.
 
 ```solidity title="contracts/storage/PositionStorage.sol"
 struct Position {
@@ -50,7 +50,7 @@ mapping(uint256 => uint256) baseBal;
 - `startAt` ensures the first execution does not trigger before a specific timestamp.  
 - `nextExecAt` is updated after each execution using the helper schedule logic in the manager; skipped executions requeue for the next interval.
 
-The behaviour test [`contracts/test/system.behavior.spec.ts`](https://github.com/bobjiang/bitcoindca/blob/main/contracts/test/system.behavior.spec.ts) demonstrates the full lifecycle by creating a weekly USDC→WBTC position, funding it, waiting for the execution window, and verifying that:
+The behaviour test [`contracts/test/system.behavior.spec.ts`](https://github.com/bobjiang/dcacrypto/blob/main/contracts/test/system.behavior.spec.ts) demonstrates the full lifecycle by creating a weekly USDC→WBTC position, funding it, waiting for the execution window, and verifying that:
 
 ```typescript title="contracts/test/system.behavior.spec.ts"
 await expect(executor.connect(keeper).execute(positionId))

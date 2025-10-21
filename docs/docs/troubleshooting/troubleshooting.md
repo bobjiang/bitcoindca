@@ -1,7 +1,7 @@
 ---
 title: Troubleshooting Runbook
 sidebar_label: Troubleshooting
-description: Operational checklist for diagnosing and resolving common BitcoinDCA incidents.
+description: Operational checklist for diagnosing and resolving common DCA Crypto incidents.
 ---
 
 # Troubleshooting Runbook
