@@ -58,5 +58,5 @@ Use the persistent left navigation or the global search (press `/`) to jump to s
 ## Staying up to date
 
 - Track protocol changes in `CHANGELOG.md` (root of the Git repository).
-- Watch the [`contracts/test`](https://github.com/bobjiang/dcacrypto/tree/main/contracts/test) suite for new behaviours and edge cases.
+- Watch the [`contracts/test`](https://github.com/bobjiang/dca-crypto/tree/main/contracts/test) suite for new behaviours and edge cases.
 - Subscribe to the community channel for release notes and incident reports.

@@ -52,7 +52,7 @@ Callouts inside the UI surface guard failures (`PRICE_DEVIATION`, `GAS_CAP`, `DE
 1. **Clone and install**
 
    ```bash
-   git clone https://github.com/bobjiang/dcacrypto.git
+   git clone https://github.com/bobjiang/dca-crypto.git
    cd dcacrypto
    pnpm install
    ```

@@ -60,4 +60,4 @@ DCA Crypto is a layered system that harmonises on-chain smart contracts with off
 - [Smart Contract Reference](./smart-contracts.md)
 - [Integration Guide](./integration-guide.md)
 - [Testing Playbooks](./testing.md)
-- Root documents: [`architecture.md`](https://github.com/bobjiang/dcacrypto/blob/main/architecture.md), [`user-flow.md`](https://github.com/bobjiang/dcacrypto/blob/main/user-flow.md), [`AGENTS.md`](https://github.com/bobjiang/dcacrypto/blob/main/AGENTS.md)
+- Root documents: [`architecture.md`](https://github.com/bobjiang/dca-crypto/blob/main/architecture.md), [`user-flow.md`](https://github.com/bobjiang/dca-crypto/blob/main/user-flow.md), [`AGENTS.md`](https://github.com/bobjiang/dca-crypto/blob/main/AGENTS.md)

@@ -23,7 +23,7 @@ const config: Config = {
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
   organizationName: 'bobjiang',
-  projectName: 'dcacrypto',
+  projectName: 'dca-crypto',
 
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
@@ -43,7 +43,7 @@ const config: Config = {
         docs: {
           routeBasePath: '/',
           sidebarPath: './sidebars.ts',
-          editUrl: 'https://github.com/bobjiang/dcacrypto/tree/main/docs',
+          editUrl: 'https://github.com/bobjiang/dca-crypto/tree/main/docs',
         },
         blog: false,
         theme: {
@@ -88,7 +88,7 @@ const config: Config = {
           label: 'Documentation',
         },
         {
-          href: 'https://github.com/bobjiang/dcacrypto',
+          href: 'https://github.com/bobjiang/dca-crypto',
           label: 'GitHub',
           position: 'right',
         },
@@ -128,7 +128,7 @@ const config: Config = {
           items: [
             {
               label: 'Repository',
-              href: 'https://github.com/bobjiang/dcacrypto',
+              href: 'https://github.com/bobjiang/dca-crypto',
             },
             {
               label: 'Community Chat',
