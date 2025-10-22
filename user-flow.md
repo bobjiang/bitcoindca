@@ -1,6 +1,6 @@
-# Bitcoin DCA User Flow Diagrams
+# DCA Crypto User Flow Diagrams
 
-This document provides comprehensive user flow diagrams for the Bitcoin DCA application, showing the complete user journey from position creation to execution and management.
+This document provides comprehensive user flow diagrams for the DCA Crypto application, showing the complete user journey from position creation to execution and management.
 
 ## User Flow Overview
 

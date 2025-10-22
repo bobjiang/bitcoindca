@@ -8,6 +8,7 @@ import "solidity-coverage";
 import * as dotenv from "dotenv";
 import path from "path";
 import { TASK_COMPILE_SOLIDITY_GET_SOLC_BUILD } from "hardhat/builtin-tasks/task-names";
+import "./hardhat.extensions";
 
 dotenv.config();
 

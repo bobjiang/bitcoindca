@@ -36,7 +36,7 @@ export const WETH_DECIMALS = 18;
 export const DEFAULT_SLIPPAGE_BPS = 50; // 0.5%
 export const DEFAULT_TWAP_WINDOW = 3600; // 1 hour
 export const DEFAULT_MAX_PRICE_DEVIATION_BPS = 100; // 1%
-export const DEFAULT_PROTOCOL_FEE_BPS = 20; // 0.2%
+export const DEFAULT_PROTOCOL_FEE_BPS = 30; // 0.3%
 
 // System limits
 export const MAX_POSITIONS_PER_USER = 10;

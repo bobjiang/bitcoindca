@@ -7,12 +7,12 @@ import {
   setupTestBalances,
 } from "../helpers/mocks";
 import {
-  createDefaultFeeConfig,
   ROLES,
   BTC_PRICE_USD,
   ETH_PRICE_USD,
   USDC_PRICE_USD,
 } from "../helpers/constants";
+import { createDefaultFeeConfig } from "../helpers/utils";
 
 /**
  * Test Fixtures
@@ -76,7 +76,7 @@ export async function deployBaseSystemFixture() {
   const positionNFT = await upgrades.deployProxy(
     PositionNFT,
     [
-      "Bitcoin DCA Position",
+      "DCA Crypto Position",
       "BDCA",
       await positionStorage.getAddress(),
     ],
@@ -117,10 +117,35 @@ export async function deployBaseSystemFixture() {
     { kind: "uups" }
   );
   await dcaManager.waitForDeployment();
+  const dcaManagerAddress = await dcaManager.getAddress();
+
+  await positionStorage
+    .connect(deployer)
+    .setDcaManager(dcaManagerAddress);
+
+  await ethers.provider.send("hardhat_impersonateAccount", [dcaManagerAddress]);
+  await ethers.provider.send("hardhat_setBalance", [
+    dcaManagerAddress,
+    ethers.toBeHex(ethers.parseEther("100"))
+  ]);
+  const dcaManagerSigner = await ethers.getSigner(dcaManagerAddress);
+  const patchedDcaManager = dcaManager as unknown as any;
+  patchedDcaManager.provider = dcaManagerSigner.provider;
+  patchedDcaManager.getAddress = async () => dcaManagerAddress;
+  patchedDcaManager.sendTransaction = (tx: any) => dcaManagerSigner.sendTransaction(tx);
+  patchedDcaManager.call = (tx: any) => dcaManagerSigner.call(tx);
+  patchedDcaManager.estimateGas = (tx: any) => dcaManagerSigner.estimateGas(tx);
+  patchedDcaManager.signTransaction = (tx: any) => dcaManagerSigner.signTransaction(tx);
+  patchedDcaManager.signMessage = (message: any) => dcaManagerSigner.signMessage(message);
+  patchedDcaManager.signTypedData = (...args: any[]) => (dcaManagerSigner as any).signTypedData(...args);
+  patchedDcaManager.sendUncheckedTransaction = (tx: any) =>
+    (dcaManagerSigner as any).sendUncheckedTransaction
+      ? (dcaManagerSigner as any).sendUncheckedTransaction(tx)
+      : dcaManagerSigner.sendTransaction(tx);
 
   await positionNFT
     .connect(deployer)
-    .setManager(await dcaManager.getAddress());
+    .setManager(dcaManagerAddress);
 
   await dcaManager.connect(deployer).setQuoteTokenAllowed(await tokens.usdc.getAddress(), true);
   await dcaManager.connect(deployer).setQuoteTokenAllowed(await tokens.dai.getAddress(), true);

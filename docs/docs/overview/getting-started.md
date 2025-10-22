@@ -23,7 +23,7 @@ Use this guide to configure your wallet, fund the protocol, or bootstrap a devel
 DCA Crypto supports the following environments:
 
 - **Mainnet** — production execution with live routing.  
-- **Testnets** — fork-based testing driven by the Hardhat suite (`pnpm -F contracts test`).  
+- **Testnets** — fork-based testing driven by the Hardhat suite (`pnpm --filter ./contracts test`).  
 - **Local devnet** — run Hardhat node or Anvil for integration testing.
 
 ## Quickstart
@@ -60,8 +60,8 @@ Callouts inside the UI surface guard failures (`PRICE_DEVIATION`, `GAS_CAP`, `DE
 2. **Compile and test contracts**
 
    ```bash
-   pnpm -F contracts build
-   pnpm -F contracts test
+   pnpm --filter ./contracts build
+   pnpm --filter ./contracts test
    ```
 
    The behaviour and guard coverage tests (e.g. `contracts/test/system.behavior.spec.ts`) validate the execution pipeline. Use them as executable documentation when extending features.
@@ -69,8 +69,8 @@ Callouts inside the UI surface guard failures (`PRICE_DEVIATION`, `GAS_CAP`, `DE
 3. **Run the frontend or docs**
 
    ```bash
-   pnpm -F frontend dev     # user dashboard
-   pnpm -F docs start       # documentation site
+   pnpm --filter ./frontend dev     # user dashboard
+   pnpm --filter docs start         # documentation site
    ```
 
 4. **Deploy to a fork or devnet**
@@ -80,7 +80,7 @@ Callouts inside the UI surface guard failures (`PRICE_DEVIATION`, `GAS_CAP`, `DE
 5. **Generate TypeScript bindings**
 
    ```bash
-   pnpm -F contracts typechain
+   pnpm --filter ./contracts typechain
    ```
 
    Bindings are used by both the frontend and the examples in this documentation.

@@ -1,6 +1,6 @@
 # Security Fixes Test Suite Documentation
 
-This document describes the comprehensive test suite created for all critical and high severity security fixes applied to the BitcoinDCA smart contracts.
+This document describes the comprehensive test suite created for all critical and high severity security fixes applied to the DCA Crypto smart contracts.
 
 ## Test Files
 

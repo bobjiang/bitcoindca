@@ -54,8 +54,8 @@ The behaviour test [`contracts/test/system.behavior.spec.ts`](https://github.com
 
 ```typescript title="contracts/test/system.behavior.spec.ts"
 await expect(executor.connect(keeper).execute(positionId))
-  .to.emit(executor, "ExecutionCompleted")
-  .withArgs(positionId, await keeper.getAddress());
+  .to.emit(executor, "PositionExecuted")
+  .withArgs(positionId);
 ```
 
 ## Guardrails

@@ -34,8 +34,8 @@ Execution success and skipped cases are validated in the behaviour and security 
 
 ```typescript title="contracts/test/security/MEVProtection.test.ts"
 await expect(executor.connect(keeper).execute(positionId))
-  .to.emit(executor, "ExecutionCompleted")
-  .withArgs(positionId, keeper.address);
+  .to.emit(executor, "PositionExecuted")
+  .withArgs(positionId);
 
 await expect(executor.connect(keeper).execute(positionIdWithBadPrice))
   .to.emit(executor, "ExecutionSkipped")

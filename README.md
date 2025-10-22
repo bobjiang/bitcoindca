@@ -54,8 +54,20 @@ cp frontend/.env.example frontend/.env
 # Compile contracts
 pnpm contracts:compile
 
-# Run tests
+# Run core Hardhat tests (unit + ABI/spec suites)
+pnpm --filter ./contracts test
+# or (via workspace script)
 pnpm contracts:test
+
+# Run behaviour + integration suites (requires env toggle)
+RUN_DCA_BEHAVIOR_TESTS=true pnpm --filter ./contracts test test/system.behavior.spec.ts
+RUN_DCA_BEHAVIOR_TESTS=true pnpm --filter ./contracts test test/integration/**/*.test.ts
+
+# Generate gas report
+pnpm --filter ./contracts test:gas
+
+# Generate coverage report
+pnpm --filter ./contracts test:coverage
 
 # Deploy to local network
 pnpm contracts:deploy:local
@@ -63,6 +75,8 @@ pnpm contracts:deploy:local
 # Deploy to Sepolia testnet
 pnpm contracts:deploy:sepolia
 ```
+
+`RUN_DCA_BEHAVIOR_TESTS=true` enables longer-running scenarios that deploy full UUPS stacks and execute end-to-end flows. Leave it unset for the quick ABI and unit regression suite.
 
 #### Frontend
 

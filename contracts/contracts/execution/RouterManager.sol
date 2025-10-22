@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
+import {LegacyAccessControl} from "../libraries/LegacyAccessControl.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {Roles} from "../libraries/Roles.sol";
 
@@ -11,7 +11,7 @@ import {Roles} from "../libraries/Roles.sol";
  *         corresponding router adapters. The executor relies on this contract
  *         to resolve the correct adapter when routing a position.
  */
-contract RouterManager is AccessControl, ReentrancyGuard {
+contract RouterManager is LegacyAccessControl, ReentrancyGuard {
     address public immutable dcaManager;
 
     mapping(uint16 => address) private _adapters;

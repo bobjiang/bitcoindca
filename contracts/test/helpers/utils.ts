@@ -257,6 +257,7 @@ export interface FeeConfig {
   gasPremiumBps: number;
   feeCollector: string;
   referralFeeBpsDefault: number;
+  referralFeeOnTop: boolean;
 }
 
 export function createDefaultFeeConfig(
@@ -264,11 +265,12 @@ export function createDefaultFeeConfig(
   overrides?: Partial<FeeConfig>
 ): FeeConfig {
   return {
-    protocolFeeBps: 20, // 0.2%
+    protocolFeeBps: 30, // 0.3%
     executionFeeFixedWei: ethers.parseEther("0.001"), // 0.001 ETH
     gasPremiumBps: 10, // 0.1%
     feeCollector,
     referralFeeBpsDefault: 50, // 50% of protocol fee
+    referralFeeOnTop: false,
     ...overrides,
   };
 }

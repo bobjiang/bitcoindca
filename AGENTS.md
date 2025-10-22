@@ -15,10 +15,10 @@ If your change touches any on‑chain logic, **read** `/architecture.md` before 
 
 ## Coding rules
 
-- all the solidity codes are required to reviewed by following the file `/contracts/security/Contract-Code-Review.md`
-- the solidity codes must follow the existing test suits `/contracts/test/`
-- any code changes are required to documentate, please update `./docs/` 
+- any code changes, please do the code review by following the file `/contracts/security/Contract-Code-Review.md`
+- the new codes must not break the already passed tests, `pnpm --filter ./contracts test`
 - if any new tests are required to add, change the test suits `/contracts/test/`
+- any code changes are required to documentate, please update `./docs/` 
 
 ---
 
@@ -42,13 +42,13 @@ Note: if you need to test the behavior of smart contract, remember to set the en
 
 ```bash
 pnpm install               # install workspace deps
-pnpm -F contracts build    # compile solidity
-pnpm -F contracts test     # run solidity tests
-pnpm -F contracts lint     # solhint/format checks
+pnpm --filter ./contracts build    # compile solidity
+pnpm --filter ./contracts test     # run solidity tests
+pnpm --filter ./contracts lint     # solhint/format checks
 
-pnpm -F frontend dev       # run Next.js dev server
-pnpm -F frontend test      # run UI tests
-pnpm -F frontend lint      # eslint/prettier
+pnpm --filter ./frontend dev       # run Next.js dev server
+pnpm --filter ./frontend test      # run UI tests
+pnpm --filter ./frontend lint      # eslint/prettier
 
 pnpm format                # repo-wide formatting
 ```

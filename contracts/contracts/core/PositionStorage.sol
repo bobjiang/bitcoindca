@@ -2,7 +2,7 @@
 pragma solidity ^0.8.24;
 
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import {AccessControlUpgradeable} from "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import {LegacyAccessControlUpgradeable} from "../libraries/LegacyAccessControlUpgradeable.sol";
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {Roles} from "../libraries/Roles.sol";
 
@@ -11,7 +11,7 @@ import {Roles} from "../libraries/Roles.sol";
  * @notice Upgradeable storage contract that preserves position metadata for off-chain consumers
  *         while allowing the DcaManager logic to evolve independently.
  */
-contract PositionStorage is Initializable, AccessControlUpgradeable, UUPSUpgradeable {
+contract PositionStorage is Initializable, LegacyAccessControlUpgradeable, UUPSUpgradeable {
     struct Metadata {
         address owner;
         address beneficiary;

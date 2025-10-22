@@ -12,7 +12,7 @@ if (!projectId) {
 }
 
 export const config = getDefaultConfig({
-  appName: "Bitcoin DCA",
+  appName: "DCA Crypto",
   projectId,
   chains: [
     ...(process.env.NEXT_PUBLIC_CHAIN_ID === "1" ? [mainnet] : []),

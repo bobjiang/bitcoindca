@@ -2,21 +2,22 @@ import type { Artifact } from "hardhat/types";
 import { ensureArtifactOrSkip, expectEvents, expectFunctions } from "./helpers/artifacts";
 
 const REQUIRED_FUNCTIONS = [
-  "initialize",
   "execute",
   "batchExecute",
-  "simulateExecution",
-  "setKeeper",
-  "setPublicExecutorDelay",
-  "setExecutionFeeConfig",
+  "checkUpkeep",
+  "performUpkeep",
+  "executePublic",
+  "calculateFees",
+  "estimateSlippage",
+  "selectRoute",
+  "validateOracleStaleness",
+  "validateGasCaps",
 ];
 
 const REQUIRED_EVENTS = [
-  "ExecutionRequested",
-  "ExecutionCompleted",
+  "PositionExecuted",
   "ExecutionSkipped",
-  "KeeperUpdated",
-  "ExecutionFeeConfigUpdated",
+  "ExecutionDetails",
 ];
 
 describe("Executor ABI", function () {

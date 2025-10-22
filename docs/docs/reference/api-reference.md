@@ -6,109 +6,136 @@ description: Public contract APIs and key parameters for integrating with DCA Cr
 
 # API Reference
 
-This reference covers the primary smart contracts. Always verify against the generated ABIs in `contracts/artifacts/` after building.
+Use this guide when interacting with the contracts directly or generating client bindings. Every signature listed below is enforced by the ABI tests under `contracts/test/*.abi.spec.ts`.
 
 ## DcaManager
 
-### Position lifecycle
+### Lifecycle
 
 | Signature | Description |
 | --- | --- |
-| `function createPosition(CreatePositionParams calldata params) external returns (uint256 positionId)` | Creates a new position, mints a `PositionNFT`, sets `nextExecAt`. |
-| `function modify(uint256 positionId, ModifyParams calldata params) external` | Updates mutable guardrails and metadata. |
-| `function pause(uint256 positionId) external` | Marks position as paused. |
-| `function resume(uint256 positionId) external` | Clears pause flag and schedules next execution. |
-| `function cancel(uint256 positionId) external` | Closes and refunds a position, burns the NFT. |
-| `function emergencyWithdraw(uint256 positionId) external` | Initiates emergency withdrawal flow. |
-| `function completeEmergencyWithdraw(uint256 positionId) external` | Final step after timelock delay. |
+| `function initialize(address positionNFT, address positionStorage, address priceOracle, address treasury, address baseAsset) external initializer` | Proxy initialiser. Grants roles to the caller and stores contract addresses. |
+| `function createPosition(CreatePositionParams calldata params) external returns (uint256 positionId)` | Creates a new strategy, mints the NFT, schedules the first execution. |
+| `function modify(uint256 positionId, ModifyPositionParams calldata params) external` | Updates mutable guards, beneficiaries, venue preference, and MEV flag. |
+| `function pause(uint256 positionId) external` / `function resume(uint256 positionId) external` | Toggles the execution flag. |
+| `function cancel(uint256 positionId) external` | Cancels a position, burns the NFT, and stops future executions. |
+| `function emergencyWithdraw(uint256 positionId) external` | First call arms the delay. After the unlock timestamp the same function releases funds and cancels the position. |
 
 ### Funds management
 
 | Signature | Description |
 | --- | --- |
-| `function deposit(uint256 positionId, address token, uint256 amount) external` | Adds idle quote/base balance. |
-| `function withdraw(uint256 positionId, address token, uint256 amount, address to) external` | Transfers funds to beneficiary or custom address. |
+| `function deposit(uint256 positionId, address token, uint256 amount) external` | Adds idle balances for upcoming executions. |
+| `function withdraw(uint256 positionId, address token, uint256 amount, address to) external` | Withdraws idle balances to the beneficiary or a custom address. |
 
 ### Views
 
 | Signature | Description |
 | --- | --- |
 | `function getPosition(uint256 positionId) external view returns (Position memory)` | Full position struct. |
-| `function getPositionBalance(uint256 positionId) external view returns (uint256 quoteBal, uint256 baseBal)` | Idle balances. |
-| `function getNextExecutionTime(uint256 positionId) external view returns (uint64)` | Scheduled timestamp. |
-| `function isPositionEligible(uint256 positionId) external view returns (bool)` | Keeper-friendly eligibility check. |
-| `function positionsByOwner(address owner) external view returns (uint256[] memory)` | Owned position IDs. |
-| `function globalPauseState() external view returns (bool systemPaused, uint64 resumeAt)` | High-level pause signal. |
+| `function getPositionBalance(uint256 positionId, address token) external view returns (uint256)` | Idle balance for the given token (quote for BUY, base for SELL). |
+| `function getNextExecutionTime(uint256 positionId) external view returns (uint64)` | Timestamp used by keepers and UI. |
+| `function isPositionEligible(uint256 positionId) external view returns (bool eligible, string memory reason)` | Keeper-friendly eligibility check. |
+| `function positionsByOwner(address owner) external view returns (uint256[] memory)` | Enumerates owned IDs. |
+| `function globalPauseState() external view returns (GlobalPauseState memory)` | Returns `GlobalPauseState({ allPaused: bool })`. |
 
 ### Configuration
 
 | Signature | Notes |
 | --- | --- |
-| `function setProtocolConfig(ProtocolConfig calldata config) external onlyRole(TREASURER_ROLE)` | Updates fees and collectors. |
-| `function setCircuitBreakerConfig(CircuitBreakerConfig calldata config) external onlyRole(PAUSER_ROLE)` | Updates global limits. |
-| `function setVenueConfig(uint16 venue, address adapter, VenueConfig calldata config) external onlyRole(ROUTER_ADMIN_ROLE)` | Whitelists/updates adapters. |
-| `function setKeeperRegistry(address chainlinkRegistry, address gelatoRegistry) external onlyRole(KEEPER_ROLE)` | Points automation to current registries. |
+| `function setProtocolConfig(ProtocolConfig calldata config) external onlyRole(Roles.TREASURER)` | Adjusts protocol fee %, execution fee floor, gas premium %, fee collector, referral default. |
+| `function setCircuitBreakerConfig(uint256 dailyLimitUsd, uint16 priceMovementBps) external onlyRole(Roles.PAUSER)` | Updates the global daily volume limit and price movement guard. |
+| `function setVenueConfig(uint16 venue, address adapter) external onlyRole(Roles.ROUTER_ADMIN)` | Registers or updates the adapter for a venue enum value. |
+| `function setKeeperRegistry(address chainlinkRegistry, address gelatoRegistry) external onlyRole(Roles.KEEPER)` | Updates automation registries. |
+| `function setQuoteTokenAllowed(address token, bool allowed) external onlyRole(Roles.DEFAULT_ADMIN)` | Adds/removes quote tokens. |
 
 ## Executor
 
 | Signature | Description |
 | --- | --- |
-| `function execute(uint256 positionId) external nonReentrant` | Executes a single position. |
-| `function batchExecute(uint256[] calldata positionIds) external nonReentrant` | Batch execution. |
-| `function simulate(uint256 positionId) external view returns (ExecutionResult memory)` | Deterministic simulation for keepers. |
-| `function setKeeper(address keeper, bool allowed) external onlyRole(EXECUTOR_ROLE)` | Manage authorised keeper addresses. |
+| `function execute(uint256 positionId) external onlyRole(Roles.EXECUTOR) whenNotPaused returns (bool success)` | Executes a single position. |
+| `function batchExecute(uint256[] calldata positionIds) external onlyRole(Roles.EXECUTOR) whenNotPaused returns (ExecutionResult[] memory results)` | Executes multiple positions. |
+| `function checkUpkeep(bytes calldata) external view returns (bool upkeepNeeded, bytes memory performData)` | Chainlink Automation check. |
+| `function performUpkeep(bytes calldata performData) external onlyRole(Roles.KEEPER) whenNotPaused` | Chainlink Automation callback. |
+| `function executePublic(uint256 positionId) external whenNotPaused returns (bool success)` | Public execution path after the grace period. |
+| `function calculateFees(uint256 positionId, uint256 notionalUsd) external view returns (uint256 protocolFee, uint256 executionFee)` | Helper for UI/monitoring. |
+| `function estimateSlippage(uint256 positionId, uint16 routeHint) external view returns (uint256 slippageBps, uint256 priceImpact)` | Provides guardrails used by dashboards. |
+| `function selectRoute(uint256 positionId) external view returns (uint16 venue, bytes memory routeData)` | Exposes routing decision for analytics. |
 
-### Events
-
-- `event ExecutionCompleted(uint256 indexed positionId, address indexed keeper);`
-- `event ExecutionSkipped(uint256 indexed positionId, string reason);`
-- `event ExecutionDetails(uint256 indexed positionId, address indexed keeper, uint256 gasUsed, bytes routePath, int256 priceImpactBps, uint256 twapWindow, uint256 oracleTimestamp);`
+Events: `PositionExecuted(uint256 indexed positionId)`, `ExecutionSkipped(uint256 indexed positionId, string reason)`, `ExecutionDetails(...)`.
 
 ## PriceOracle
 
 | Signature | Description |
 | --- | --- |
-| `function getQuoteUsd(address asset) external view returns (uint256 price, uint256 updatedAt)` | USD price from Chainlink feeds. |
-| `function getTwap(address pool, uint32 window) external view returns (uint256 priceX96)` | Uniswap v3 TWAP calculation. |
-| `function validatePrice(address base, address quote, uint32 window, uint16 deviationBps) external view returns (bool ok, uint256 referencePriceUsd, uint256 deviation)` | Combined guard logic used by executor. |
-| `function setFeed(address asset, address feed) external onlyRole(ORACLE_ADMIN_ROLE)` | Update Chainlink aggregators. |
+| `function initialize(address admin) external initializer` | Optional proxy initialiser (constructor already sets the deployer). |
+| `function setFeed(address token, address feed) external onlyRole(Roles.ORACLE_ADMIN)` | Adds or updates a Chainlink feed. |
+| `function registerUniswapPool(address token0, address token1, uint24 fee, address pool) external onlyRole(Roles.ORACLE_ADMIN)` | Stores UniV3 pools for TWAP sources. |
+| `function setMaxStaleness(uint256 newMaxStaleness) external onlyRole(Roles.ORACLE_ADMIN)` | Adjusts staleness threshold. |
+| `function configureAlias(bytes32 aliasKey, address token) external onlyRole(Roles.ORACLE_ADMIN)` | Adds symbol→token mappings. |
+| `function setReferencePrice(address token, uint256 price) external onlyRole(Roles.ORACLE_ADMIN)` | Seeds reference prices used in confidence scoring. |
+| `function latestPrice(address token) external view returns (uint256 price)` | Returns the latest Chainlink price (reverts if stale). |
+| `function latestPriceUnsafe(address token) external view returns (uint256 price, uint256 updatedAt)` | Same as above without the staleness check. |
+| `function twap(address tokenIn, address tokenOut, uint24 fee, uint32 window) external view returns (uint256)` | Returns the configured TWAP. |
+| `function isOracleFresh(address token) external view returns (bool)` | Convenience wrapper around the staleness check. |
+| `function getDeviationBps(uint256 price1, uint256 price2) external pure returns (uint256 deviationBps)` | Symmetric deviation helper. |
 
 ## Treasury
 
+All treasury actions are subject to the `TimelockController` delay unless otherwise noted.
+
 | Signature | Description |
 | --- | --- |
-| `function withdraw(address token, uint256 amount, address to) external onlyRole(TREASURER_ROLE)` | Disburse fees. |
-| `function schedule(address target, uint256 value, bytes calldata data, bytes32 salt, uint256 delay) external onlyRole(TREASURER_ROLE)` | Timelock scheduling. |
-| `function execute(address target, uint256 value, bytes calldata data, bytes32 salt) external onlyRole(TREASURER_ROLE)` | Finalise scheduled action. |
+| `function initialize(FeeConfig calldata config) external` | One-off initialiser (reverts if called twice). Referral fields are percentages (0–100). |
+| `function collectFees(address token, uint256 amount) external whenNotPaused onlyRole(FEE_COLLECTOR_ROLE)` | Pulls protocol fees into the timelock. |
+| `function distributeFees(address[] calldata recipients, uint256[] calldata amounts, address token) external whenNotPaused onlyRole(TREASURER_ROLE)` | Distributes ERC-20 balances, emitting `FeeDistributed`. |
+| `function withdraw(address token, uint256 amount, address to) external onlyRole(TREASURER_ROLE)` | Direct withdrawal (also available via timelock scheduling). |
+| `function pauseContract() external onlyRole(PAUSER_ROLE)` / `function unpauseContract() external onlyRole(PAUSER_ROLE)` | Emergency stop for fee collection/distribution. |
+| `function registerKeeperPayment(address keeper, uint256 amount) external onlyRole(TREASURER_ROLE)` | Accrues ETH incentives. |
+| `function claimKeeperPayment() external` | Claim accrued ETH incentive. |
+| `function setProtocolFeeBps(uint16 newBps) external onlyRole(TREASURER_ROLE)` | Updates protocol fee percentage (0–100). |
+| `function setReferralFeeBps(uint16 newBps) external onlyRole(TREASURER_ROLE)` | Updates default referral percentage (0–100). |
+| `function setReferralFeeOnTop(bool onTop) external onlyRole(TREASURER_ROLE)` | Toggles whether referral rewards are applied on top of (vs carved out of) the protocol fee. |
+| `function setFeeCollector(address newCollector) external onlyRole(TREASURER_ROLE)` | Updates fee collector and role membership. |
+| `function setCustomReferralFee(address referrer, uint16 bps) external onlyRole(TREASURER_ROLE)` | Overrides referral percentage (0–100). |
+| `function calculateFees(address referrer, uint256 notionalUsd) external view returns (uint256 protocolShare, uint256 referralShare)` | Utility view that returns the protocol net share and referral reward for a notional amount. |
 
 ## Router adapters
 
-| Adapter | Signature | Purpose |
-| --- | --- | --- |
-| `UniV3Adapter` | `swapExactInput(SwapParams calldata params)` | Executes exact-input swaps via Uniswap v3 pools. |
-| `CowAdapter` | `placeOrder(CowOrder calldata order)` | Submits CoW Protocol orders and validates settlement. |
-| `OneInchAdapter` | `executeAggregatorSwap(bytes calldata data)` | Executes prebuilt 1inch quotes. |
+All adapters share the following core function:
 
-Adapters expose minimal state and revert with descriptive errors captured in `routerAdapters.abi.spec.ts`.
+`function swapExactTokens(address tokenIn, address tokenOut, uint256 amountIn, uint256 minAmountOut, address recipient) external returns (uint256 amountOut);`
+
+| Adapter | Additional helpers | Notes |
+| --- | --- | --- |
+| `UniV3Adapter` | `registerPool`, `executeSwap`, `executeSwapWithFlashbots`, `batchSwap`, `quote`, `checkLiquidity`, `getTWAP`, `getOptimalFeeTier`, `adapterType` | Wraps the Uniswap v3 router with deterministic quoting. |
+| `CowAdapter` | `createOrder`, `cancelOrder`, `settleOrder`, `simulatePartialFill`, `adapterType` | Mimics CoW Protocol settlement and partial-fill logic. |
+| `OneInchAdapter` | `swap`, `swapMultiHop`, `swapFallback`, `swapWithRetry`, `getOptimalRoute`, `getExpectedReturn`, `supportsAssetPair`, `adapterType` | Deterministic 1inch-style aggregator with multi-DEX distribution. |
+
+The `RouterManager` exposes `addRouterAdapter(uint16 venue, address adapter)`, `updateRouterAdapter`, `removeRouterAdapter`, `getAdapter(uint16 venue)`, and `registeredVenues()` to maintain the mapping.
 
 ## PositionNFT
 
 | Signature | Description |
 | --- | --- |
-| `function mint(address to, uint256 positionId) external` | Called by manager on create. |
-| `function burn(uint256 tokenId) external` | Called by manager on cancel. |
-| Standard ERC-721 functions (`ownerOf`, `transferFrom`, `safeTransferFrom`) remain available.
+| `function initialize(string memory name_, string memory symbol_, address positionStorage_) external initializer` | UUPS initialiser. |
+| `function setManager(address manager_) external onlyRole(DEFAULT_ADMIN_ROLE)` | Registers `DcaManager` as the transfer hook. |
+| `function mint(address to, uint256 tokenId) external onlyRole(MINTER_ROLE)` | Mints the NFT; reverts on zero address or existing ID. |
+| `function burn(uint256 tokenId) external onlyRole(BURNER_ROLE)` | Burns an existing token. |
+| `function setBaseURI(string memory newBaseURI) external onlyRole(DEFAULT_ADMIN_ROLE)` | Updates the base metadata URI. |
+| `function setTokenURI(uint256 tokenId, string calldata tokenURI_) external onlyRole(METADATA_ROLE)` | Stores a token-specific URI override. |
 
-## Error catalogue
+Standard ERC-721 read/transfer functions are available and preserve the legacy revert messages asserted in the unit tests.
 
-Common custom errors surfaced in tests and guard logic:
+## Common revert messages
 
-- `error PriceDeviationExceeded(uint256 deviationBps);`
-- `error TwapWindowTooShort(uint32 provided, uint32 minimum);`
-- `error PositionPaused(uint256 positionId);`
-- `error InsufficientBalance(uint256 available, uint256 requested);`
-- `error GasCapExceeded(uint64 baseFee, uint64 maxBaseFee);`
-- `error DepegDetected(address quote, uint256 priceUsd);`
-- `error ImmutableField();`
+The test suite validates the following core revert strings and custom errors. Use them for monitoring and integration debugging.
 
-Use these constants in monitoring/alerting systems to provide actionable failure messages.
+- `AccessControl: account … is missing role …`
+- `Initializable: contract is already initialized`
+- `Treasury: referral fee too high`
+- `Pausable: paused`
+- `ERC721: mint to the zero address`
+- `ERC721: token already minted`
+- `ERC721: invalid token ID`
+- Custom errors from `DcaManager` (`PositionNotFound()`, `QuoteTokenNotAllowed()`, `MaxPositionsPerUserExceeded()`, etc.) are listed in `contracts/contracts/core/DcaManager.sol`.

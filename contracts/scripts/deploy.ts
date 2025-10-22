@@ -47,7 +47,7 @@ async function main() {
     PositionNFT,
     [
       dcaManagerAddress,
-      "Bitcoin DCA Position",
+      "DCA Crypto Position",
       "BTCDCA",
     ],
     {

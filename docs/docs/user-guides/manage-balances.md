@@ -62,15 +62,15 @@ Withdrawals emit `Withdrawn(positionId, token, amount, to)` which the dashboard 
 
 ## Emergency withdrawal
 
-- `emergencyWithdraw(positionId)` starts a two-step process:  
-  1. Arm the withdrawal with a timelock delay (recorded on-chain).  
-  2. After the delay, call `completeEmergencyWithdraw` to transfer all funds.
+- `emergencyWithdraw(positionId)` is a two-step process using the same entry point:  
+  1. The first call arms the withdrawal and records `emergencyUnlockAt`.  
+  2. After the delay expires, call `emergencyWithdraw` again to transfer all funds and cancel the position.
 - Intended for venue outages or severe oracle issues.
 - Validated by `contracts/test/security/Reentrancy.test.ts` to ensure state integrity.
 
 ## Monitoring executions
 
-- The activity feed renders `ExecutionCompleted`, `ExecutionSkipped`, `Deposited`, and `Withdrawn` events.  
+- The activity feed renders `PositionExecuted`, `ExecutionSkipped`, `Deposited`, and `Withdrawn` events.  
 - The dashboard compares TWAP vs execution price, highlighting deviations beyond tolerated bounds.  
 - For custom tooling, subscribe to events in the [Reference > Events](../reference/events.md) section.
 

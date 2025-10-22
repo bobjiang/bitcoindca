@@ -23,15 +23,16 @@ describe("Treasury", function () {
 
   // Constants
   const MIN_DELAY = 2 * 24 * 60 * 60; // 2 days in seconds
-  const DEFAULT_PROTOCOL_FEE_BPS = 20; // 0.20%
+  const DEFAULT_PROTOCOL_FEE_BPS = 30; // 0.30%
   const DEFAULT_EXECUTION_FEE = parseEther("0.001"); // 0.001 ETH
   const DEFAULT_GAS_PREMIUM_BPS = 10; // 0.10%
   const DEFAULT_REFERRAL_FEE_BPS = 50; // 50% of protocol fee
+  const DEFAULT_REFERRAL_ON_TOP = false;
 
   // Roles
   let PROPOSER_ROLE: string;
   let EXECUTOR_ROLE: string;
-  let TIMELOCK_ADMIN_ROLE: string;
+  let DEFAULT_ADMIN_ROLE: string;
   let TREASURER_ROLE: string;
   let EMERGENCY_ROLE: string;
   let FEE_COLLECTOR_ROLE: string;
@@ -73,7 +74,7 @@ describe("Treasury", function () {
     // Get role identifiers
     PROPOSER_ROLE = await treasury.PROPOSER_ROLE();
     EXECUTOR_ROLE = await treasury.EXECUTOR_ROLE();
-    TIMELOCK_ADMIN_ROLE = await treasury.TIMELOCK_ADMIN_ROLE();
+    DEFAULT_ADMIN_ROLE = await treasury.DEFAULT_ADMIN_ROLE();
     TREASURER_ROLE = ethers.keccak256(ethers.toUtf8Bytes("TREASURER_ROLE"));
     EMERGENCY_ROLE = ethers.keccak256(ethers.toUtf8Bytes("EMERGENCY_ROLE"));
     FEE_COLLECTOR_ROLE = ethers.keccak256(ethers.toUtf8Bytes("FEE_COLLECTOR_ROLE"));
@@ -93,9 +94,12 @@ describe("Treasury", function () {
       gasPremiumBps: DEFAULT_GAS_PREMIUM_BPS,
       feeCollector: feeCollector.address,
       referralFeeBpsDefault: DEFAULT_REFERRAL_FEE_BPS,
+      referralFeeOnTop: DEFAULT_REFERRAL_ON_TOP,
     };
 
     await treasury.connect(owner).initialize(initialFeeConfig);
+
+    expect(await treasury.hasRole(DEFAULT_ADMIN_ROLE, owner.address)).to.be.true;
 
     // Fund treasury with tokens for testing
     await usdc.mint(treasury.target, parseUnits("100000", 6)); // 100k USDC
@@ -117,7 +121,7 @@ describe("Treasury", function () {
 
   describe("Deployment & Initialization", function () {
     it("should deploy with correct timelock parameters", async function () {
-      const { treasury } = await loadFixture(deployTreasuryFixture);
+      const { treasury, feeCollector } = await loadFixture(deployTreasuryFixture);
 
       // Verify minimum delay
       const minDelay = await treasury.getMinDelay();
@@ -149,6 +153,7 @@ describe("Treasury", function () {
       expect(feeConfig.gasPremiumBps).to.equal(DEFAULT_GAS_PREMIUM_BPS);
       expect(feeConfig.feeCollector).to.equal(feeCollector.address);
       expect(feeConfig.referralFeeBpsDefault).to.equal(DEFAULT_REFERRAL_FEE_BPS);
+      expect(feeConfig.referralFeeOnTop).to.equal(DEFAULT_REFERRAL_ON_TOP);
     });
 
     it("should not allow re-initialization", async function () {
@@ -160,6 +165,7 @@ describe("Treasury", function () {
         gasPremiumBps: 15,
         feeCollector: owner.address,
         referralFeeBpsDefault: 40,
+        referralFeeOnTop: false,
       };
 
       await expect(
@@ -507,12 +513,13 @@ describe("Treasury", function () {
     it("should update protocol fee BPS", async function () {
       const { treasury, owner } = await loadFixture(deployTreasuryFixture);
 
-      const newProtocolFeeBps = 30; // 0.30%
+      const newProtocolFeeBps = 35; // 0.35%
 
       await treasury.connect(owner).setProtocolFeeBps(newProtocolFeeBps);
 
       const feeConfig = await treasury.getFeeConfig();
       expect(feeConfig.protocolFeeBps).to.equal(newProtocolFeeBps);
+      expect(feeConfig.referralFeeOnTop).to.equal(DEFAULT_REFERRAL_ON_TOP);
     });
 
     it("should emit ProtocolFeeUpdated event", async function () {
@@ -534,6 +541,7 @@ describe("Treasury", function () {
 
       const feeConfig = await treasury.getFeeConfig();
       expect(feeConfig.referralFeeBpsDefault).to.equal(newReferralFeeBps);
+      expect(feeConfig.referralFeeOnTop).to.equal(DEFAULT_REFERRAL_ON_TOP);
     });
 
     it("should emit ReferralFeeUpdated event", async function () {
@@ -553,6 +561,7 @@ describe("Treasury", function () {
 
       const feeConfig = await treasury.getFeeConfig();
       expect(feeConfig.feeCollector).to.equal(user1.address);
+      expect(feeConfig.referralFeeOnTop).to.equal(DEFAULT_REFERRAL_ON_TOP);
     });
 
     it("should emit FeeCollectorUpdated event", async function () {
@@ -937,15 +946,18 @@ describe("Treasury", function () {
     it("should calculate referral fee correctly", async function () {
       const { treasury, owner, user1 } = await loadFixture(deployTreasuryFixture);
 
-      const protocolFee = parseUnits("100", 6); // 100 USDC protocol fee
+      const notional = parseUnits("1000", 6);
       const customReferralBps = 60; // 60%
 
       await treasury.connect(owner).setCustomReferralFee(user1.address, customReferralBps);
 
-      const expectedReferralFee = (protocolFee * BigInt(customReferralBps)) / BigInt(10000);
-      const actualReferralFee = await treasury.calculateReferralFee(user1.address, protocolFee);
+      const [protocolFee, referralFee] = await treasury.calculateFees(user1.address, notional);
 
-      expect(actualReferralFee).to.equal(expectedReferralFee);
+      const grossProtocolFee = (notional * BigInt(DEFAULT_PROTOCOL_FEE_BPS)) / BigInt(10_000);
+      const expectedReferralFee = (grossProtocolFee * BigInt(customReferralBps)) / BigInt(100);
+
+      expect(referralFee).to.equal(expectedReferralFee);
+      expect(protocolFee + referralFee).to.equal(grossProtocolFee);
     });
 
     it("should emit CustomReferralFeeSet event", async function () {
@@ -961,7 +973,7 @@ describe("Treasury", function () {
     it("should not allow referral fee > 100%", async function () {
       const { treasury, owner, user1 } = await loadFixture(deployTreasuryFixture);
 
-      const invalidReferralBps = 10001; // > 100%
+      const invalidReferralBps = 101; // > 100%
 
       await expect(
         treasury.connect(owner).setCustomReferralFee(user1.address, invalidReferralBps)
@@ -977,23 +989,18 @@ describe("Treasury", function () {
       const customReferralBps = 60; // 60% of protocol fee
       await treasury.connect(owner).setCustomReferralFee(referrerAddress, customReferralBps);
 
-      // Simulate protocol fee collection
-      const protocolFeeAmount = parseUnits("1000", 6); // 1000 USDC protocol fee
-      await usdc.connect(feeCollector).mint(feeCollector.address, protocolFeeAmount);
-      await usdc.connect(feeCollector).approve(treasury.target, protocolFeeAmount);
-      await treasury.connect(feeCollector).collectFees(usdc.target, protocolFeeAmount);
+      const notional = parseUnits("1000", 6);
+      const [protocolShare, referralShare] = await treasury.calculateFees(referrerAddress, notional);
+      const grossProtocolFee = protocolShare + referralShare;
 
-      // Calculate referral fee
-      const referralFee = await treasury.calculateReferralFee(referrerAddress, protocolFeeAmount);
-      const expectedReferralFee = (protocolFeeAmount * BigInt(customReferralBps)) / BigInt(10000);
-      expect(referralFee).to.equal(expectedReferralFee);
+      // Simulate protocol fee collection (gross amount)
+      await usdc.connect(feeCollector).mint(feeCollector.address, grossProtocolFee);
+      await usdc.connect(feeCollector).approve(treasury.target, grossProtocolFee);
+      await treasury.connect(feeCollector).collectFees(usdc.target, grossProtocolFee);
 
-      // Calculate protocol's net share (after referral fee)
-      const protocolNetShare = protocolFeeAmount - referralFee;
-
-      // Distribute: referrer gets referral fee, treasury keeps net protocol fee
-      const recipients = [referrerAddress, user2.address]; // user2 represents treasury beneficiary
-      const amounts = [referralFee, protocolNetShare];
+      // Distribute: referrer receives referral portion, treasury beneficiary receives net protocol share
+      const recipients = [referrerAddress, user2.address];
+      const amounts = [referralShare, protocolShare];
 
       const balanceBefore1 = await usdc.balanceOf(referrerAddress);
       const balanceBefore2 = await usdc.balanceOf(user2.address);
@@ -1003,18 +1010,9 @@ describe("Treasury", function () {
       const balanceAfter1 = await usdc.balanceOf(referrerAddress);
       const balanceAfter2 = await usdc.balanceOf(user2.address);
 
-      // Verify referrer received correct referral fee (60% of protocol fee)
-      expect(balanceAfter1 - balanceBefore1).to.equal(expectedReferralFee);
-      expect(balanceAfter1 - balanceBefore1).to.equal(parseUnits("600", 6)); // 60% of 1000
-
-      // Verify treasury received net protocol fee (40% of protocol fee)
-      expect(balanceAfter2 - balanceBefore2).to.equal(protocolNetShare);
-      expect(balanceAfter2 - balanceBefore2).to.equal(parseUnits("400", 6)); // 40% of 1000
-
-      // Verify total distributed equals protocol fee collected
-      expect((balanceAfter1 - balanceBefore1) + (balanceAfter2 - balanceBefore2)).to.equal(
-        protocolFeeAmount
-      );
+      expect(balanceAfter1 - balanceBefore1).to.equal(referralShare);
+      expect(balanceAfter2 - balanceBefore2).to.equal(protocolShare);
+      expect(referralShare + protocolShare).to.equal(grossProtocolFee);
     });
 
     it("should handle referral fees with default rate when no custom rate set", async function () {
@@ -1024,31 +1022,22 @@ describe("Treasury", function () {
       // user1 is a referrer without custom rate (uses default 50%)
       const referrerAddress = user1.address;
 
-      // Simulate protocol fee collection
-      const protocolFeeAmount = parseUnits("2000", 6); // 2000 USDC
-      await usdc.connect(feeCollector).mint(feeCollector.address, protocolFeeAmount);
-      await usdc.connect(feeCollector).approve(treasury.target, protocolFeeAmount);
-      await treasury.connect(feeCollector).collectFees(usdc.target, protocolFeeAmount);
+      const notional = parseUnits("2000", 6);
+      const [protocolShare, referralShare] = await treasury.calculateFees(referrerAddress, notional);
+      const grossProtocolFee = protocolShare + referralShare;
 
-      // Calculate referral fee with default rate
-      const referralFee = await treasury.calculateReferralFee(referrerAddress, protocolFeeAmount);
-      const expectedReferralFee =
-        (protocolFeeAmount * BigInt(DEFAULT_REFERRAL_FEE_BPS)) / BigInt(10000);
+      await usdc.connect(feeCollector).mint(feeCollector.address, grossProtocolFee);
+      await usdc.connect(feeCollector).approve(treasury.target, grossProtocolFee);
+      await treasury.connect(feeCollector).collectFees(usdc.target, grossProtocolFee);
 
-      expect(referralFee).to.equal(expectedReferralFee);
-      expect(referralFee).to.equal(parseUnits("1000", 6)); // 50% of 2000
-
-      // Distribute fees
-      const protocolNetShare = protocolFeeAmount - referralFee;
       const recipients = [referrerAddress, user2.address];
-      const amounts = [referralFee, protocolNetShare];
+      const amounts = [referralShare, protocolShare];
 
       const balanceBefore = await usdc.balanceOf(referrerAddress);
       await treasury.connect(treasurer1).distributeFees(recipients, amounts, usdc.target);
       const balanceAfter = await usdc.balanceOf(referrerAddress);
 
-      // Verify referrer received 50% (default rate)
-      expect(balanceAfter - balanceBefore).to.equal(parseUnits("1000", 6));
+      expect(balanceAfter - balanceBefore).to.equal(referralShare);
     });
 
     it("should support multiple referrers with different custom rates", async function () {
@@ -1059,39 +1048,69 @@ describe("Treasury", function () {
       await treasury.connect(owner).setCustomReferralFee(user1.address, 60); // 60%
       await treasury.connect(owner).setCustomReferralFee(user2.address, 40); // 40%
       // treasurer3 uses default 50%
+      const perUserNotional = parseUnits("1000", 6);
 
-      // Collect protocol fees
-      const totalProtocolFee = parseUnits("3000", 6);
-      await usdc.connect(feeCollector).mint(feeCollector.address, totalProtocolFee);
-      await usdc.connect(feeCollector).approve(treasury.target, totalProtocolFee);
-      await treasury.connect(feeCollector).collectFees(usdc.target, totalProtocolFee);
+      const breakdown1 = await treasury.calculateFees(user1.address, perUserNotional);
+      const breakdown2 = await treasury.calculateFees(user2.address, perUserNotional);
+      const breakdown3 = await treasury.calculateFees(treasurer3.address, perUserNotional);
 
-      // Calculate individual referral fees
-      const fee1 = await treasury.calculateReferralFee(user1.address, parseUnits("1000", 6));
-      const fee2 = await treasury.calculateReferralFee(user2.address, parseUnits("1000", 6));
-      const fee3 = await treasury.calculateReferralFee(treasurer3.address, parseUnits("1000", 6));
+      const referralAmounts = [breakdown1[1], breakdown2[1], breakdown3[1]];
+      const totalGross = breakdown1[0] + breakdown1[1] + breakdown2[0] + breakdown2[1] + breakdown3[0] + breakdown3[1];
 
-      expect(fee1).to.equal(parseUnits("600", 6)); // 60% of 1000
-      expect(fee2).to.equal(parseUnits("400", 6)); // 40% of 1000
-      expect(fee3).to.equal(parseUnits("500", 6)); // 50% of 1000 (default)
+      await usdc.connect(feeCollector).mint(feeCollector.address, totalGross);
+      await usdc.connect(feeCollector).approve(treasury.target, totalGross);
+      await treasury.connect(feeCollector).collectFees(usdc.target, totalGross);
 
-      // Verify each referrer gets correct amount
       const recipients = [user1.address, user2.address, treasurer3.address];
-      const amounts = [fee1, fee2, fee3];
 
       const balancesBefore = await Promise.all(
         recipients.map((addr) => usdc.balanceOf(addr))
       );
 
-      await treasury.connect(treasurer1).distributeFees(recipients, amounts, usdc.target);
+      await treasury.connect(treasurer1).distributeFees(recipients, referralAmounts, usdc.target);
 
       const balancesAfter = await Promise.all(
         recipients.map((addr) => usdc.balanceOf(addr))
       );
 
-      expect(balancesAfter[0] - balancesBefore[0]).to.equal(fee1);
-      expect(balancesAfter[1] - balancesBefore[1]).to.equal(fee2);
-      expect(balancesAfter[2] - balancesBefore[2]).to.equal(fee3);
+      expect(balancesAfter[0] - balancesBefore[0]).to.equal(referralAmounts[0]);
+      expect(balancesAfter[1] - balancesBefore[1]).to.equal(referralAmounts[1]);
+      expect(balancesAfter[2] - balancesBefore[2]).to.equal(referralAmounts[2]);
+    });
+
+    it("should toggle referral fee on top of protocol fee", async function () {
+      const { treasury, owner, user1, treasurer1, feeCollector, usdc } = await loadFixture(deployTreasuryFixture);
+
+      await treasury.connect(owner).setCustomReferralFee(user1.address, 20); // 20%
+
+      await expect(treasury.connect(owner).setReferralFeeOnTop(true))
+        .to.emit(treasury, "ReferralFeeModeUpdated")
+        .withArgs(true);
+
+      const notional = parseUnits("1000", 6);
+      const [protocolShare, referralShare] = await treasury.calculateFees(user1.address, notional);
+
+      const expectedProtocolShare = (notional * BigInt(DEFAULT_PROTOCOL_FEE_BPS)) / BigInt(10_000);
+      const expectedReferralOnTop = (notional * BigInt(20)) / BigInt(100);
+
+      expect(protocolShare).to.equal(expectedProtocolShare);
+      expect(referralShare).to.equal(expectedReferralOnTop);
+
+      const totalCollected = protocolShare + referralShare;
+
+      await usdc.connect(feeCollector).mint(feeCollector.address, totalCollected);
+      await usdc.connect(feeCollector).approve(treasury.target, totalCollected);
+      await treasury.connect(feeCollector).collectFees(usdc.target, totalCollected);
+
+      const balanceBefore = await usdc.balanceOf(user1.address);
+      await treasury.connect(treasurer1).distributeFees([user1.address], [referralShare], usdc.target);
+      const balanceAfter = await usdc.balanceOf(user1.address);
+
+      expect(balanceAfter - balanceBefore).to.equal(referralShare);
+
+      await expect(treasury.connect(owner).setReferralFeeOnTop(false))
+        .to.emit(treasury, "ReferralFeeModeUpdated")
+        .withArgs(false);
     });
   });
 
@@ -1110,7 +1129,9 @@ describe("Treasury", function () {
       expect(config.protocolFeeBps).to.equal(DEFAULT_PROTOCOL_FEE_BPS);
       expect(config.executionFeeFixedWei).to.equal(DEFAULT_EXECUTION_FEE);
       expect(config.gasPremiumBps).to.equal(DEFAULT_GAS_PREMIUM_BPS);
+      expect(config.feeCollector).to.equal(feeCollector.address);
       expect(config.referralFeeBpsDefault).to.equal(DEFAULT_REFERRAL_FEE_BPS);
+      expect(config.referralFeeOnTop).to.equal(DEFAULT_REFERRAL_ON_TOP);
     });
 
     it("should return operation readiness status", async function () {

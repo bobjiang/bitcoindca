@@ -86,7 +86,7 @@ Leverage the test suite to understand expected behaviour:
 
 - Deployment scripts live in `contracts/scripts`.  
 - Provide environment variables for each network (`CHAINLINK_REGISTRAR`, `GELATO_AUTOMATE`, `FLASHBOTS_RELAY`).  
-- Run `pnpm -F contracts deploy --network mainnet` with multisig sign-off.
+- Run `pnpm --filter ./contracts deploy --network mainnet` with multisig sign-off.
 
 ## Working with docs
 

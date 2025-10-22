@@ -32,7 +32,7 @@ Refer to `contracts/test/security/MEVProtection.test.ts` and `DOSProtection.test
 3. Confirm grace period not exceeded. If exceeded, encourage public execution or run a manual keeper script:
 
 ```bash
-pnpm -F contracts ts-node scripts/manualExecute.ts --position 42
+pnpm --filter ./contracts ts-node scripts/manualExecute.ts --position 42
 ```
 
 4. Review recent contract upgrades or config changes that may have invalidated automation.
@@ -59,7 +59,7 @@ pnpm -F contracts ts-node scripts/manualExecute.ts --position 42
 
 ## 6. Frontend anomalies
 
-- Run `pnpm -F frontend lint` and `pnpm -F frontend test`.  
+- Run `pnpm --filter ./frontend lint` and `pnpm --filter ./frontend test`.  
 - Clear local storage/session caches (RainbowKit).  
 - Validate environment variables (`NEXT_PUBLIC_DCA_MANAGER`, etc.).  
 - Compare API responses with on-chain data via `getPosition` to identify caching issues.
@@ -70,7 +70,7 @@ When new incident types emerge:
 
 1. Add reason codes to `frontend/lib/protocol.ts`.  
 2. Update this runbook and relevant guides.  
-3. Regenerate docs (`pnpm -F docs build`) and redeploy.
+3. Regenerate docs (`pnpm --filter docs build`) and redeploy.
 
 ## 8. Communication checklist
 

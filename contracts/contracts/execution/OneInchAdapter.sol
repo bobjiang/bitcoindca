@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
+import {LegacyAccessControl} from "../libraries/LegacyAccessControl.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -20,7 +20,7 @@ interface IMintableToken is IERC20 {
  *         It distributes order flow across a curated list of virtual DEXs and
  *         provides helper quoting utilities.
  */
-contract OneInchAdapter is AccessControl, ReentrancyGuard, Pausable, ITradeAdapter {
+contract OneInchAdapter is LegacyAccessControl, ReentrancyGuard, Pausable, ITradeAdapter {
     using SafeERC20 for IERC20;
 
     string public constant ADAPTER_TYPE = "ONE_INCH_AGGREGATOR";

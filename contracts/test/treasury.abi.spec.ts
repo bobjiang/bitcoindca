@@ -14,6 +14,8 @@ describe("Treasury ABI", function () {
       "setFeeCollector",
       "setProtocolFeeBps",
       "setReferralFeeBps",
+      "setReferralFeeOnTop",
+      "calculateFees",
       "withdraw",
       "claimKeeperPayment",
     ]);
@@ -24,6 +26,8 @@ describe("Treasury ABI", function () {
       "FeeCollectorUpdated",
       "ProtocolFeeUpdated",
       "ReferralFeeUpdated",
+      "ReferralFeeModeUpdated",
+      "FeeDistributed",
       "KeeperPaymentClaimed",
     ]);
   });

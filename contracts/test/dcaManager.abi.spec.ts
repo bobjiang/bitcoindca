@@ -42,16 +42,24 @@ describe("DcaManager ABI", function () {
     expectEvents(artifact.abi, [
       "PositionCreated",
       "PositionModified",
+      "PositionSlippageUpdated",
+      "PositionVenueUpdated",
+      "PositionGasCapsUpdated",
+      "PositionPriceGuardsUpdated",
+      "PositionBeneficiaryUpdated",
+      "PositionPaused",
+      "PositionResumed",
+      "PositionCanceled",
+      "PositionExecuted",
       "Deposited",
       "Withdrawn",
-      "Executed",
-      "ExecutionSkipped",
-      "Paused",
-      "Resumed",
-      "Canceled",
       "EmergencyWithdrawn",
       "ProtocolConfigUpdated",
-      "CircuitBreakerTriggered",
+      "KeeperRegistryUpdated",
+      "VenueConfigUpdated",
+      "ExecNonceBumped",
+      "QuoteTokenAllowed",
+      "ActivePositionsReconciled",
     ]);
   });
 
@@ -60,6 +68,6 @@ describe("DcaManager ABI", function () {
       .filter((entry) => entry.type === "error" || entry.type === "event" || entry.type === "function")
       .map((entry) => entry.name ?? "");
 
-    expect(structNames).to.include("Permit2SpenderNotSet");
+    expect(structNames).to.include("QuoteTokenNotAllowed");
   });
 });

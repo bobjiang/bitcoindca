@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
+import {LegacyAccessControl} from "../libraries/LegacyAccessControl.sol";
 import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 import {Roles} from "../libraries/Roles.sol";
 
@@ -13,7 +13,7 @@ interface ITwapSource {
  * @title PriceOracle
  * @notice Aggregates price data from Chainlink feeds and simplified Uniswap V3 TWAP sources.
  */
-contract PriceOracle is AccessControl {
+contract PriceOracle is LegacyAccessControl {
     struct PriceFeedConfig {
         address feed;
         bool exists;
@@ -26,6 +26,8 @@ contract PriceOracle is AccessControl {
 
     uint256 public constant MAX_BPS = 10_000;
     uint256 public maxStaleness = 1_800; // default 30 minutes
+
+    bool private _initialized;
 
     mapping(address => PriceFeedConfig) private _priceFeeds;
     mapping(bytes32 => TwapPool) private _uniswapPools;
@@ -41,16 +43,65 @@ contract PriceOracle is AccessControl {
     event ReferencePriceUpdated(address indexed token, uint256 price);
 
     constructor() {
-        _grantRole(Roles.DEFAULT_ADMIN, msg.sender);
-        _grantRole(Roles.ORACLE_ADMIN, msg.sender);
+        _initialize(msg.sender);
+    }
+
+    function initialize(address admin) external {
+        require(!_initialized, "PriceOracle: already initialized");
+        _initialize(admin);
+    }
+
+    function _initialize(address admin) internal {
+        require(admin != address(0), "PriceOracle: invalid admin");
+        _initialized = true;
+        _grantRole(Roles.DEFAULT_ADMIN, admin);
+        _grantRole(Roles.ORACLE_ADMIN, admin);
     }
 
     modifier onlyOracleAdmin() {
-        require(hasRole(Roles.ORACLE_ADMIN, msg.sender), "AccessControl: account");
+        _checkRole(Roles.ORACLE_ADMIN, msg.sender);
         _;
     }
 
-    function addPriceFeed(address token, address feed) external onlyOracleAdmin {
+    function setFeed(address token, address feed) external onlyOracleAdmin {
+        PriceFeedConfig storage config = _priceFeeds[token];
+        if (config.exists) {
+            updatePriceFeed(token, feed);
+        } else {
+            addPriceFeed(token, feed);
+        }
+    }
+
+    function setTwapWindow(uint256 newMaxStaleness) external onlyOracleAdmin {
+        setMaxStaleness(newMaxStaleness);
+    }
+
+    function latestPrice(address token) external view returns (uint256 price) {
+        (price,) = getTokenPrice(token);
+    }
+
+    function latestPriceUnsafe(address token) external view returns (uint256 price, uint256 updatedAt) {
+        PriceFeedConfig memory config = _priceFeeds[token];
+        require(config.exists, "Feed missing");
+        return getChainlinkPrice(config.feed);
+    }
+
+    function twap(address tokenIn, address tokenOut, uint24 fee, uint32 window) external view returns (uint256) {
+        return getTWAP(tokenIn, tokenOut, fee, window);
+    }
+
+    function isOracleFresh(address token) external view returns (bool) {
+        PriceFeedConfig memory config = _priceFeeds[token];
+        require(config.exists, "Feed missing");
+        (, uint256 updatedAt) = getChainlinkPrice(config.feed);
+        return validatePriceStaleness(updatedAt);
+    }
+
+    function getDeviationBps(uint256 price1, uint256 price2) external pure returns (uint256 deviationBps) {
+        (, deviationBps) = validatePriceDeviation(price1, price2, MAX_BPS);
+    }
+
+    function addPriceFeed(address token, address feed) public onlyOracleAdmin {
         require(token != address(0), "Invalid token address");
         require(feed != address(0), "Invalid feed address");
         require(!_priceFeeds[token].exists, "Feed already exists");
@@ -59,7 +110,7 @@ contract PriceOracle is AccessControl {
         emit PriceFeedAdded(token, feed);
     }
 
-    function updatePriceFeed(address token, address feed) external onlyOracleAdmin {
+    function updatePriceFeed(address token, address feed) public onlyOracleAdmin {
         require(feed != address(0), "Invalid feed address");
         PriceFeedConfig storage config = _priceFeeds[token];
         require(config.exists, "Feed missing");
@@ -78,7 +129,7 @@ contract PriceOracle is AccessControl {
         return _priceFeeds[token].feed;
     }
 
-    function setMaxStaleness(uint256 newMaxStaleness) external onlyOracleAdmin {
+    function setMaxStaleness(uint256 newMaxStaleness) public onlyOracleAdmin {
         require(newMaxStaleness > 0, "Invalid staleness");
         maxStaleness = newMaxStaleness;
         emit MaxStalenessUpdated(newMaxStaleness);

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
+import {LegacyAccessControl} from "../libraries/LegacyAccessControl.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -41,7 +41,7 @@ interface IUniswapV3PoolView {
  *         registry of pools so it can offer TWAP/quoter utilities without
  *         relying on external state.
  */
-contract UniV3Adapter is AccessControl, ReentrancyGuard, Pausable, ITradeAdapter {
+contract UniV3Adapter is LegacyAccessControl, ReentrancyGuard, Pausable, ITradeAdapter {
     using SafeERC20 for IERC20;
 
     string public constant ADAPTER_TYPE = "UNISWAP_V3";

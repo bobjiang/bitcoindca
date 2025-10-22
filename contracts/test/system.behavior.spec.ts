@@ -77,7 +77,7 @@ async function loadSystemFixture(this: Mocha.Context): Promise<SystemContracts> 
   };
 }
 
-describe("Bitcoin DCA – System behaviour", function () {
+describe("DCA Crypto – System behaviour", function () {
   let system: SystemContracts;
 
   beforeEach(async function () {

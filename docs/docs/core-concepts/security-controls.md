@@ -38,7 +38,7 @@ Security in DCA Crypto is anchored around deterministic guardrails, rigorous tes
 | `contracts/test/system.behavior.spec.ts` | End-to-end flow | Confirms execution schedule, gas caps, and guards interact correctly |
 | `contracts/test/oracle.abi.spec.ts` | Oracle interface | Verifies Chainlink feed exposure to keepers and UI |
 
-All tests can be run with `pnpm -F contracts test`. CI pipelines block merges that violate these invariants.
+All tests can be run with `pnpm --filter ./contracts test`. CI pipelines block merges that violate these invariants.
 
 ## Access control & roles
 

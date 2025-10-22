@@ -31,7 +31,7 @@ describe("PositionNFT", function () {
     it("should deploy with correct name and symbol", async function () {
       const { positionNFT } = await loadFixture(deployBaseSystemFixture);
 
-      expect(await positionNFT.name()).to.equal("Bitcoin DCA Position");
+      expect(await positionNFT.name()).to.equal("DCA Crypto Position");
       expect(await positionNFT.symbol()).to.equal("BDCA");
     });
 

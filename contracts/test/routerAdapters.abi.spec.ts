@@ -1,11 +1,13 @@
 import type { Artifact } from "hardhat/types";
 import { ensureArtifactOrSkip, expectFunctions } from "./helpers/artifacts";
 
-const ROUTER_FUNCTIONS = [
-  "quote",
-  "executeSwap",
-  "supportsAssetPair",
-];
+const COMMON_FUNCTIONS = ["swapExactTokens", "quote", "supportsAssetPair", "adapterType"];
+
+const ADAPTER_SPECIFICS: Record<string, string[]> = {
+  UniV3Adapter: ["executeSwap", "executeSwapWithFlashbots", "batchSwap", "registerPool"],
+  CowAdapter: ["createOrder", "settleOrder", "simulatePartialFill"],
+  OneInchAdapter: ["swap", "swapMultiHop", "swapFallback", "swapWithRetry"],
+};
 
 describe("Router adapters ABI", function () {
   const adapters = ["UniV3Adapter", "CowAdapter", "OneInchAdapter"] as const;
@@ -18,12 +20,13 @@ describe("Router adapters ABI", function () {
         artifact = await ensureArtifactOrSkip(this, adapter);
       });
 
-      it("exposes routing primitives", function () {
-        expectFunctions(artifact.abi, ROUTER_FUNCTIONS);
+      it("exposes common routing primitives", function () {
+        expectFunctions(artifact.abi, COMMON_FUNCTIONS);
       });
 
-      it("supports slippage hinting", function () {
-        expectFunctions(artifact.abi, ["estimatePriceImpact"]);
+      it("exposes venue-specific helpers", function () {
+        const specifics = ADAPTER_SPECIFICS[adapter] ?? [];
+        expectFunctions(artifact.abi, specifics);
       });
     });
   }

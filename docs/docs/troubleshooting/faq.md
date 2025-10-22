@@ -42,7 +42,7 @@ Gas is paid by the executing keeper. For public executions, the protocol adds th
 ## Operations
 
 **How do I derive cost basis?**  
-Subscribe to `ExecutionCompleted` and reconstruct amounts from the event. The docs provide sample listeners in [Events & Telemetry](../reference/events.md).
+Subscribe to `PositionExecuted` and reconstruct amounts from the event. The docs provide sample listeners in [Events & Telemetry](../reference/events.md).
 
 **Can I move my PositionNFT to another wallet?**  
 Yes, but the new owner assumes control of modifications and withdrawals. Ensure the beneficiary is updated if needed.

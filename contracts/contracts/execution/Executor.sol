@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
+import {LegacyAccessControl} from "../libraries/LegacyAccessControl.sol";
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
@@ -81,7 +81,7 @@ interface IRouterManager {
  *         positions. The implementation focuses on determinism required by the
  *         unit tests and does not interact with real DEX liquidity.
  */
-contract Executor is AccessControl, Pausable, ReentrancyGuard {
+contract Executor is LegacyAccessControl, Pausable, ReentrancyGuard {
     using Address for address payable;
     using SafeERC20 for IERC20;
 

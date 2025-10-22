@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
+import {LegacyAccessControl} from "../libraries/LegacyAccessControl.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
@@ -25,7 +25,7 @@ interface IMintableERC20 is IERC20 {
  *         Orders are tracked in memory and funds are escrowed in the accompanying
  *         mock settlement contract to provide realistic state transitions.
  */
-contract CoWAdapter is AccessControl, ReentrancyGuard, ITradeAdapter {
+contract CoWAdapter is LegacyAccessControl, ReentrancyGuard, ITradeAdapter {
     using SafeERC20 for IERC20;
 
     string public constant ADAPTER_TYPE = "COW_PROTOCOL";

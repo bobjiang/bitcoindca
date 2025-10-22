@@ -73,6 +73,6 @@ Populate deployment and keeper scripts with the following:
 
 1. Update `ProtocolConfig` / `CircuitBreakerConfig` on-chain via timelock.  
 2. Reflect new values in `frontend/lib/protocol.ts`.  
-3. Regenerate TypeScript types (`pnpm -F contracts typechain`).  
-4. Rebuild docs (`pnpm -F docs build`) and ensure this page mirrors on-chain settings.  
+3. Regenerate TypeScript types (`pnpm --filter ./contracts typechain`).  
+4. Rebuild docs (`pnpm --filter docs build`) and ensure this page mirrors on-chain settings.  
 5. Notify keepers and users via Discord/EPNS.

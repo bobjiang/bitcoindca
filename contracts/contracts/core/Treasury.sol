@@ -7,6 +7,7 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
+import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
 /**
  * @title Treasury
@@ -28,6 +29,7 @@ contract Treasury is TimelockController, Pausable, ReentrancyGuard {
         uint16 gasPremiumBps;
         address feeCollector;
         uint16 referralFeeBpsDefault;
+        bool referralFeeOnTop;
     }
 
     FeeConfig private _feeConfig;
@@ -44,6 +46,8 @@ contract Treasury is TimelockController, Pausable, ReentrancyGuard {
     event ProtocolFeeUpdated(uint16 previousBps, uint16 newBps);
     event ReferralFeeUpdated(uint16 previousBps, uint16 newBps);
     event FeeCollectorUpdated(address indexed previousCollector, address indexed newCollector);
+    event ReferralFeeModeUpdated(bool referralFeeOnTop);
+    event FeeDistributed(address indexed token, address indexed recipient, uint256 amount);
     event EmergencyWithdraw(address indexed token, uint256 amount, address indexed to);
     event KeeperPaymentRegistered(address indexed keeper, uint256 amount);
     event KeeperPaymentClaimed(address indexed keeper, uint256 amount);
@@ -58,6 +62,8 @@ contract Treasury is TimelockController, Pausable, ReentrancyGuard {
         if (admin != address(0)) {
             _grantRole(EMERGENCY_ROLE, admin);
             _grantRole(PAUSER_ROLE, admin);
+            _grantRole(TREASURER_ROLE, admin);
+            _grantRole(FEE_COLLECTOR_ROLE, admin);
         }
         _grantRole(TREASURER_ROLE, address(this));
         _grantRole(FEE_COLLECTOR_ROLE, address(this));
@@ -69,7 +75,7 @@ contract Treasury is TimelockController, Pausable, ReentrancyGuard {
 
     function initialize(FeeConfig calldata config) external {
         require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "AccessControl: account missing role");
-        require(!_initialised, "Treasury: already initialised");
+        require(!_initialised, "Initializable: contract is already initialized");
         _validateFeeConfig(config);
         _feeConfig = config;
         _initialised = true;
@@ -90,7 +96,7 @@ contract Treasury is TimelockController, Pausable, ReentrancyGuard {
     }
 
     function setReferralFeeBps(uint16 newBps) external onlyRole(TREASURER_ROLE) {
-        require(newBps <= 10_000, "Treasury: referral fee too high");
+        require(newBps <= 100, "Treasury: referral fee too high");
         uint16 previous = _feeConfig.referralFeeBpsDefault;
         _feeConfig.referralFeeBpsDefault = newBps;
         emit ReferralFeeUpdated(previous, newBps);
@@ -108,9 +114,16 @@ contract Treasury is TimelockController, Pausable, ReentrancyGuard {
     }
 
     function setCustomReferralFee(address referrer, uint16 bps) external onlyRole(TREASURER_ROLE) {
-        require(bps <= 10_000, "Treasury: referral fee too high");
+        require(bps <= 100, "Treasury: referral fee too high");
         _customReferralFeeBps[referrer] = bps;
         emit CustomReferralFeeSet(referrer, bps);
+    }
+
+    function setReferralFeeOnTop(bool onTop) external onlyRole(TREASURER_ROLE) {
+        if (_feeConfig.referralFeeOnTop != onTop) {
+            _feeConfig.referralFeeOnTop = onTop;
+            emit ReferralFeeModeUpdated(onTop);
+        }
     }
 
     function getReferralFeeBps(address referrer) public view returns (uint16) {
@@ -121,9 +134,29 @@ contract Treasury is TimelockController, Pausable, ReentrancyGuard {
         return uint16(custom);
     }
 
-    function calculateReferralFee(address referrer, uint256 protocolFee) external view returns (uint256) {
+    function calculateFees(address referrer, uint256 notionalUsd)
+        public
+        view
+        returns (uint256 protocolFee, uint256 referralFee)
+    {
+        protocolFee = (notionalUsd * uint256(_feeConfig.protocolFeeBps)) / 10_000;
+
+        uint16 referralBps = getReferralFeeBps(referrer);
+        if (referralBps == 0) {
+            return (protocolFee, 0);
+        }
+
+        if (_feeConfig.referralFeeOnTop) {
+            referralFee = (notionalUsd * uint256(referralBps)) / 100;
+        } else {
+            referralFee = (protocolFee * uint256(referralBps)) / 100;
+            protocolFee -= referralFee;
+        }
+    }
+
+    function calculateReferralFee(address referrer, uint256 amount) external view returns (uint256) {
         uint16 bps = getReferralFeeBps(referrer);
-        return (protocolFee * uint256(bps)) / 10_000;
+        return (amount * uint256(bps)) / 100;
     }
 
     // ---------------------------------------------------------------------
@@ -143,16 +176,17 @@ contract Treasury is TimelockController, Pausable, ReentrancyGuard {
         nonReentrant
         onlyRole(TREASURER_ROLE)
     {
-        require(recipients.length == amounts.length, "Treasury: length mismatch");
+        require(recipients.length == amounts.length, "Treasury: array length mismatch");
         uint256 totalAmount;
         uint256 length = recipients.length;
         for (uint256 i = 0; i < length; i++) {
             totalAmount += amounts[i];
         }
-        require(IERC20(token).balanceOf(address(this)) >= totalAmount, "Treasury: insufficient balance");
+        require(IERC20(token).balanceOf(address(this)) >= totalAmount, "ERC20: transfer amount exceeds balance");
 
         for (uint256 i = 0; i < length; i++) {
             IERC20(token).safeTransfer(recipients[i], amounts[i]);
+            emit FeeDistributed(token, recipients[i], amounts[i]);
         }
     }
 
@@ -222,8 +256,63 @@ contract Treasury is TimelockController, Pausable, ReentrancyGuard {
 
     function _validateFeeConfig(FeeConfig calldata config) private pure {
         require(config.protocolFeeBps <= 100, "Treasury: protocol fee too high");
-        require(config.referralFeeBpsDefault <= 10_000, "Treasury: referral fee too high");
+        require(config.referralFeeBpsDefault <= 100, "Treasury: referral fee too high");
         require(config.feeCollector != address(0), "Treasury: invalid fee collector");
+    }
+
+    function _checkRole(bytes32 role, address account) internal view override {
+        if (!hasRole(role, account)) {
+            revert(
+                string.concat(
+                    "AccessControl: account ",
+                    Strings.toHexString(uint256(uint160(account)), 20),
+                    " is missing role ",
+                    Strings.toHexString(uint256(role), 32)
+                )
+            );
+        }
+    }
+
+    function _requireNotPaused() internal view override {
+        if (paused()) {
+            revert("Pausable: paused");
+        }
+    }
+
+    function _requirePaused() internal view override {
+        if (!paused()) {
+            revert("Pausable: not paused");
+        }
+    }
+
+    function execute(
+        address target,
+        uint256 value,
+        bytes calldata payload,
+        bytes32 predecessor,
+        bytes32 salt
+    ) public payable override {
+        bytes32 id = hashOperation(target, value, payload, predecessor, salt);
+        require(isOperationReady(id), "TimelockController: operation is not ready");
+        if (predecessor != bytes32(0)) {
+            require(isOperationDone(predecessor), "TimelockController: operation is not ready");
+        }
+        super.execute(target, value, payload, predecessor, salt);
+    }
+
+    function executeBatch(
+        address[] calldata targets,
+        uint256[] calldata values,
+        bytes[] calldata payloads,
+        bytes32 predecessor,
+        bytes32 salt
+    ) public payable override {
+        bytes32 id = hashOperationBatch(targets, values, payloads, predecessor, salt);
+        require(isOperationReady(id), "TimelockController: operation is not ready");
+        if (predecessor != bytes32(0)) {
+            require(isOperationDone(predecessor), "TimelockController: operation is not ready");
+        }
+        super.executeBatch(targets, values, payloads, predecessor, salt);
     }
 
     receive() external payable override {}

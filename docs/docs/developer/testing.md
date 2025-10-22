@@ -12,10 +12,10 @@ DCA Crypto enforces strict testing requirements for every public/external change
 
 | Package | Command | Purpose |
 | --- | --- | --- |
-| `contracts` | `pnpm -F contracts test` | Hardhat-based unit, integration, and security tests. |
-| `contracts` | `pnpm -F contracts build` | Solidity compilation and ABI generation. |
-| `frontend` | `pnpm -F frontend test` | Component and hook tests covering dashboard flows. |
-| `frontend` | `pnpm -F frontend lint` | ESLint + Prettier conformance. |
+| `contracts` | `pnpm --filter ./contracts test` | Hardhat-based unit, integration, and security tests. |
+| `contracts` | `pnpm --filter ./contracts build` | Solidity compilation and ABI generation. |
+| `frontend` | `pnpm --filter ./frontend test` | Component and hook tests covering dashboard flows. |
+| `frontend` | `pnpm --filter ./frontend lint` | ESLint + Prettier conformance. |
 | `docs` | `pnpm -F docs build` | Validates Markdown, links, and search index generation. |
 
 ## Hardhat structure
@@ -25,13 +25,25 @@ DCA Crypto enforces strict testing requirements for every public/external change
 - **Integration tests** (`integration/EndToEnd.test.ts`) — Simulate user journeys using fixtures.
 - **Helpers** (`helpers/*.ts`) — Provide event parsing, artifact loading, and deterministic addresses.
 
+### Contract test commands
+
+- `pnpm --filter ./contracts test` — run the fast regression suite (unit, ABI, and security specs). Alias: `pnpm contracts:test`.
+- ``RUN_DCA_BEHAVIOR_TESTS=true pnpm --filter ./contracts test test/system.behavior.spec.ts`` — execute the full system behaviour flow (deploys UUPS stack, performs BUY/SELL cycles).
+- ``RUN_DCA_BEHAVIOR_TESTS=true pnpm --filter ./contracts test test/integration/**/*.test.ts`` — run integration and end-to-end journeys.
+- `pnpm --filter ./contracts test:gas` — produce a Hardhat gas report for hot paths.
+- `pnpm --filter ./contracts test:coverage` — generate Solidity coverage (output in `contracts/coverage/`).
+
+Setting `RUN_DCA_BEHAVIOR_TESTS=true` unlocks longer-running suites that perform full deployments. Leave it unset for quick iteration.
+
 ### Running selective suites
 
 ```bash
-RUN_DCA_BEHAVIOR_TESTS=true pnpm -F contracts test test/system.behavior.spec.ts
-```
+# Target a single file
+pnpm --filter ./contracts test test/unit/core/DcaManager.test.ts
 
-Setting `RUN_DCA_BEHAVIOR_TESTS=true` unlocks longer-running behaviour tests that deploy full UUPS stacks (see `system.behavior.spec.ts` logic).
+# Run only security hardening suites
+pnpm --filter ./contracts test test/security/**/*.test.ts
+```
 
 ## Writing new tests
 

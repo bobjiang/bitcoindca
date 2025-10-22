@@ -60,7 +60,7 @@ export const SEPOLIA_ADDRESSES = {
  */
 export const PROTOCOL_CONSTANTS = {
   // Fee configuration (in basis points)
-  DEFAULT_PROTOCOL_FEE_BPS: 20, // 0.20%
+  DEFAULT_PROTOCOL_FEE_BPS: 30, // 0.30%
   MIN_PROTOCOL_FEE_BPS: 10, // 0.10%
   MAX_PROTOCOL_FEE_BPS: 30, // 0.30%
   DEFAULT_SLIPPAGE_BPS: 50, // 0.50%
