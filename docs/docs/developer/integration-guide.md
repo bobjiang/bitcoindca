@@ -34,6 +34,13 @@ await executor.grantRole(KEEPER_ROLE, chainlinkRegistry);
 - Check skip reasons to avoid burning gas (`PRICE_DEVIATION`, `GAS_CAP`, `DEPEG`).  
 - The public path halves slippage tolerance; notify users accordingly.
 
+### Manual execution & Flashbots Protect
+
+- Use `pnpm --filter ./contracts execute -- --position 123` to submit a one-off transaction against the configured network.  
+- Set `EXEC_PRIVATE=true` (or pass `--private`) alongside `FLASHBOTS_RELAY` / `FLASHBOTS_AUTH_KEY` to route through Flashbots Protect.  
+- The dashboard exposes a dev-only toggle that persists to `localStorage`, while production builds honour `NEXT_PUBLIC_EXEC_PRIVATE`.  
+- Both the Hardhat helper and frontend API require `EXECUTOR_PRIVATE_KEY` and `NEXT_PUBLIC_EXECUTOR_ADDRESS` to be present.
+
 ## Indexing & analytics
 
 - Subscribe to the events defined in [Reference > Events](../reference/events.md).

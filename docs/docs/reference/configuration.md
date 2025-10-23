@@ -66,6 +66,11 @@ Populate deployment and keeper scripts with the following:
 | `CHAINLINK_REGISTRAR` | Chainlink Automation registrar address. |
 | `GELATO_AUTOMATE` | Gelato Automate address. |
 | `FLASHBOTS_RELAY` | Flashbots RPC endpoint for private tx. |
+| `EXEC_PRIVATE` | Toggle private Flashbots routing for scripts and API defaults (`true` / `false`). |
+| `FLASHBOTS_AUTH_KEY` | Optional signer used for `X-Flashbots-Signature` headers. |
+| `NEXT_PUBLIC_EXEC_PRIVATE` | Frontend default for the execution toggle (overridable in dev mode). |
+| `NEXT_PUBLIC_FLASHBOTS_RELAY` | Client-side relay override when surface needs to surface the endpoint. |
+| `NEXT_PUBLIC_EXECUTOR_ADDRESS` | Executor contract used by the dashboard/API for manual executions. |
 | `EXECUTOR_PRIVATE_KEY` | Keeper signing key (store securely). |
 | `SAFE_ADDRESS` | Multisig address for admin operations. |
 

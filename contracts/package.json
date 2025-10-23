@@ -10,6 +10,7 @@
     "deploy:local": "hardhat deploy --network localhost",
     "deploy:sepolia": "hardhat deploy --network sepolia",
     "verify:sepolia": "hardhat verify --network sepolia",
+    "execute": "hardhat run scripts/execute-position.ts",
     "node": "hardhat node",
     "clean": "hardhat clean",
     "typechain": "hardhat typechain"
