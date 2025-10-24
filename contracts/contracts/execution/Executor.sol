@@ -92,7 +92,6 @@ contract Executor is LegacyAccessControl, Pausable, ReentrancyGuard {
     IRouterManager public immutable routerManager;
     IPriceOracle public immutable priceOracle;
 
-    address public immutable baseAsset;
 
     uint256[] private _trackedPositions;
     mapping(uint256 => bool) private _isTracked;
@@ -134,7 +133,6 @@ contract Executor is LegacyAccessControl, Pausable, ReentrancyGuard {
         dcaManager = IDcaManager(dcaManager_);
         routerManager = IRouterManager(routerManager_);
         priceOracle = IPriceOracle(priceOracle_);
-        baseAsset = IDcaManager(dcaManager_).baseAsset();
 
         _grantRole(Roles.DEFAULT_ADMIN, msg.sender);
         _grantRole(Roles.EXECUTOR, msg.sender);
@@ -164,7 +162,11 @@ contract Executor is LegacyAccessControl, Pausable, ReentrancyGuard {
     }
 
     function validateOracleStaleness() public view returns (bool valid, uint256 staleness) {
-        (, uint256 updatedAt) = priceOracle.getTokenPrice(baseAsset);
+        return validateOracleStalenessFor(dcaManager.baseAsset());
+    }
+
+    function validateOracleStalenessFor(address token) public view returns (bool valid, uint256 staleness) {
+        (, uint256 updatedAt) = priceOracle.getTokenPrice(token);
         if (updatedAt > block.timestamp) {
             return (true, 0);
         }
@@ -333,14 +335,14 @@ contract Executor is LegacyAccessControl, Pausable, ReentrancyGuard {
             return (false, reason);
         }
 
-        (bool oracleValid, uint256 staleness) = validateOracleStaleness();
+        IDcaManager.Position memory position = dcaManager.getPosition(positionId);
+
+        (bool oracleValid, uint256 staleness) = validateOracleStalenessFor(position.baseToken);
         if (!oracleValid) {
             string memory skipReason = "oracle stale";
             emit ExecutionSkipped(positionId, skipReason);
             return (false, skipReason);
         }
-
-        IDcaManager.Position memory position = dcaManager.getPosition(positionId);
         if (!validateTWAPWindow(position.twapWindow)) {
             string memory skipReason = "twap window too short";
             emit ExecutionSkipped(positionId, skipReason);
@@ -353,7 +355,7 @@ contract Executor is LegacyAccessControl, Pausable, ReentrancyGuard {
             return (false, skipReason);
         }
 
-        (uint256 price, uint256 oracleTimestamp) = priceOracle.getTokenPrice(baseAsset);
+        (uint256 price, uint256 oracleTimestamp) = priceOracle.getTokenPrice(position.baseToken);
         (bool guardOk, string memory guardReason) = validatePriceGuards(positionId, price);
         if (!guardOk) {
             emit ExecutionSkipped(positionId, guardReason);

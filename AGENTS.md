@@ -72,7 +72,7 @@ When editing Solidity, adhere to **Clean ABI** constraints:
 
 ## 4) Contract Architecture (what to change where)
 
-- **`DcaManager (UUPS)`** — creates/updates positions, tracks internal balances, checks limits/circuit breakers, authorizes executors/routers.  
+- **`DcaManager (UUPS)`** — creates/updates positions, tracks internal balances, checks limits/circuit breakers, authorizes executors/routers. Supports admin-managed base-token allowlists (`setBaseTokenAllowed`) and multi-asset creation via `createPositionWithBase`.  
   Touch this for **position lifecycle** (create, pause, resume, cancel, withdraw, emergency‑withdraw), **limits**, **slippage**, **guards**.
 - **`PositionNFT (ERC‑721)`** — ownership token; metadata reads from separate upgradable storage to avoid logic conflicts.
 - **`Executor`** — keeper entrypoint; enforces guards (TWAP/multi‑oracle/slippage/gas caps), selects route, executes swap, updates accounting, schedules `nextExecAt`. **All externals are nonReentrant.**

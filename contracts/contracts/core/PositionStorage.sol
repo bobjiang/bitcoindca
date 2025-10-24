@@ -16,6 +16,7 @@ contract PositionStorage is Initializable, LegacyAccessControlUpgradeable, UUPSU
         address owner;
         address beneficiary;
         address quote;
+        address base;
         bool isBuy;
         uint16 frequency;
         uint16 venue;
@@ -41,6 +42,7 @@ contract PositionStorage is Initializable, LegacyAccessControlUpgradeable, UUPSU
         address owner,
         address beneficiary,
         address quote,
+        address base,
         bool isBuy,
         uint16 frequency,
         uint16 venue,
@@ -97,6 +99,7 @@ contract PositionStorage is Initializable, LegacyAccessControlUpgradeable, UUPSU
             metadata.owner,
             metadata.beneficiary,
             metadata.quote,
+            metadata.base,
             metadata.isBuy,
             metadata.frequency,
             metadata.venue,

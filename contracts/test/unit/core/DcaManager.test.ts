@@ -185,6 +185,33 @@ describe("DcaManager", function () {
       expect(position.amountPerPeriod).to.equal(params.amountPerPeriod);
     });
 
+    it("should create a position with an alternate base token when enabled", async function () {
+      const { dcaManager, tokens, user1 } = await loadFixture(deployBaseSystemFixture);
+
+      const params = createDefaultPositionParams(user1.address, {
+        quoteToken: await tokens.usdc.getAddress(),
+      });
+
+      await tokens.usdc
+        .connect(user1)
+        .approve(await dcaManager.getAddress(), ethers.MaxUint256);
+
+      const wethAddress = await tokens.weth.getAddress();
+
+      const tx = await dcaManager
+        .connect(user1)
+        .createPositionWithBase(params, wethAddress);
+
+      const positionId = await getPositionIdFromTx(tx);
+      const position = await dcaManager.getPosition(positionId);
+
+      expect(position.baseToken).to.equal(wethAddress);
+      expect(position.baseDecimals).to.equal(await tokens.weth.decimals());
+
+      const allowedBaseTokens = await dcaManager.getAllowedBaseTokens();
+      expect(allowedBaseTokens).to.include(wethAddress);
+    });
+
     it("should revert if max positions per user exceeded", async function () {
       const { dcaManager, tokens, user1 } = await loadFixture(deployBaseSystemFixture);
 
@@ -648,6 +675,43 @@ describe("DcaManager", function () {
 
       const updatedPosition = await dcaManager.getPosition(positionId);
       expect(updatedPosition.emergencyUnlockAt).to.be.gt(0);
+    });
+  });
+
+  describe("Base token registry", function () {
+    it("should return default and configured base tokens", async function () {
+      const { dcaManager, tokens } = await loadFixture(deployBaseSystemFixture);
+
+      const baseTokens = await dcaManager.getAllowedBaseTokens();
+      const wbtcAddress = await tokens.wbtc.getAddress();
+      const wethAddress = await tokens.weth.getAddress();
+
+      expect(baseTokens).to.include(wbtcAddress);
+      expect(baseTokens).to.include(wethAddress);
+    });
+
+    it("should allow admin to disable and re-enable secondary base tokens", async function () {
+      const { dcaManager, deployer, tokens } = await loadFixture(deployBaseSystemFixture);
+
+      const wethAddress = await tokens.weth.getAddress();
+
+      await dcaManager.connect(deployer).setBaseTokenAllowed(wethAddress, false);
+      let baseTokens = await dcaManager.getAllowedBaseTokens();
+      expect(baseTokens).to.not.include(wethAddress);
+
+      await dcaManager.connect(deployer).setBaseTokenAllowed(wethAddress, true);
+      baseTokens = await dcaManager.getAllowedBaseTokens();
+      expect(baseTokens).to.include(wethAddress);
+    });
+
+    it("should revert when attempting to disable the default base asset", async function () {
+      const { dcaManager, deployer, tokens } = await loadFixture(deployBaseSystemFixture);
+
+      const wbtcAddress = await tokens.wbtc.getAddress();
+
+      await expect(
+        dcaManager.connect(deployer).setBaseTokenAllowed(wbtcAddress, false)
+      ).to.be.revertedWithCustomError(dcaManager, "InvalidParameter");
     });
   });
 

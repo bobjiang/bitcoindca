@@ -80,7 +80,7 @@ Keeper entry point enforcing guard rails before routing swaps.
 | `calculateFees(uint256 positionId, uint256 notionalUsd)` | Returns `(protocolFee, executionFee)` using current protocol config. |
 | `estimateSlippage(uint256 positionId, uint16 routeHint)` | Provides the stored slippage and a simple price impact estimate. |
 | `selectRoute(uint256 positionId)` | Determines the venue and encoded routing data. |
-| `validateOracleStaleness()` | Checks Chainlink freshness for the base asset. |
+| `validateOracleStaleness()` / `validateOracleStalenessFor(address token)` | Checks Chainlink freshness for the default base asset or a specific token. |
 | `validateGasCaps(uint256 positionId)` | Ensures base/priority fee caps are satisfied. |
 
 ### Events

@@ -480,11 +480,17 @@ function createPosition(CreatePositionParams calldata params)
     whenNotPaused 
     returns (uint256 positionId)
 
+function createPositionWithBase(CreatePositionParams calldata params, address baseToken)
+    external
+    nonReentrant
+    whenNotPaused
+    returns (uint256 positionId)
+
 struct CreatePositionParams {
     address owner;              // Position owner
     address beneficiary;        // Optional beneficiary (defaults to owner)
     address quoteToken;         // Quote token (USDC, DAI, USDT, etc.)
-    bool isBuy;                // true = BUY (quote→WBTC), false = SELL (WBTC→quote)
+    bool isBuy;                // true = BUY (quote→baseToken), false = SELL (baseToken→quote)
     uint16 frequency;           // 0=daily, 1=weekly, 2=monthly
     uint16 venue;              // 0=AUTO, 1=UNIV3_ONLY, 2=COW_ONLY, 3=AGGREGATOR
     uint16 slippageBps;        // Slippage protection in basis points (default 50 = 0.5%)
@@ -499,6 +505,10 @@ struct CreatePositionParams {
     uint64 maxPriorityFeeWei;  // Max priority fee (0 = no limit)
     bool mevProtection;        // true = PRIVATE, false = PUBLIC
 }
+
+// Base asset registry helpers
+function setBaseTokenAllowed(address token, bool allowed) external onlyRole(DEFAULT_ADMIN)
+function getAllowedBaseTokens() external view returns (address[] memory)
 
 // Position Management
 function deposit(uint256 positionId, address token, uint256 amount) 
@@ -554,6 +564,7 @@ function pauseAsset(address asset) external onlyRole(PAUSER_ROLE);
 function pauseVenue(uint16 venue) external onlyRole(PAUSER_ROLE);
 function unpauseAll() external onlyRole(PAUSER_ROLE);
 ```
+The default deployment keeps WBTC as the primary base asset. Integrators that need to target alternative bases (e.g. WETH) should call `createPositionWithBase` with one of the addresses returned by `getAllowedBaseTokens()`. Protocol governors can extend or prune the supported list via `setBaseTokenAllowed`, which also caches per-token decimals for minimum-size checks and execution accounting.
 
 ##### Position Storage Structure
 

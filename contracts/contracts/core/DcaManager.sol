@@ -21,6 +21,7 @@ interface IPositionStorage {
         address owner;
         address beneficiary;
         address quote;
+        address base;
         bool isBuy;
         uint16 frequency;
         uint16 venue;
@@ -76,6 +77,7 @@ contract DcaManager is
     error InsufficientQuoteBalance();
     error InsufficientBaseBalance();
     error InvalidParameter();
+    error BaseTokenNotAllowed();
 
     // -----------------------------------------------------------------------
     // Events
@@ -109,6 +111,7 @@ contract DcaManager is
     event VenueConfigUpdated(uint16 venue, address adapter);
     event ExecNonceBumped(uint256 indexed positionId, uint64 oldNonce, uint64 newNonce);
     event QuoteTokenAllowed(address indexed token, bool allowed);
+    event BaseTokenAllowed(address indexed token, bool allowed);
     event EmergencyWithdrawn(
         uint256 indexed positionId,
         address indexed to,
@@ -229,6 +232,10 @@ contract DcaManager is
     mapping(address => mapping(uint256 => uint256)) private _ownerPositionIndex; // index + 1
     mapping(address => uint256) public userPositionCount;
     mapping(address => bool) public allowedQuoteTokens;
+    mapping(address => bool) public allowedBaseTokens;
+    mapping(address => uint8) private _baseTokenDecimals;
+    address[] private _allowedBaseTokenList;
+    mapping(address => uint256) private _baseTokenIndex; // index + 1
 
     // -----------------------------------------------------------------------
     // Constructor
@@ -274,7 +281,13 @@ contract DcaManager is
         priceOracle = IPriceOracle(priceOracle_);
         treasury = treasury_;
         baseAsset = baseAsset_;
-        baseAssetDecimals = IERC20Metadata(baseAsset_).decimals();
+        uint8 baseDecimals = IERC20Metadata(baseAsset_).decimals();
+        baseAssetDecimals = baseDecimals;
+
+        allowedBaseTokens[baseAsset_] = true;
+        _baseTokenDecimals[baseAsset_] = baseDecimals;
+        _allowedBaseTokenList.push(baseAsset_);
+        _baseTokenIndex[baseAsset_] = 1;
 
         maxPositionsPerUser = 10;
         maxGlobalPositions = 10_000;
@@ -311,6 +324,22 @@ contract DcaManager is
         nonReentrant
         returns (uint256 positionId)
     {
+        return _createPosition(params, address(0));
+    }
+
+    function createPositionWithBase(CreatePositionParams calldata params, address baseToken)
+        external
+        whenNotPaused
+        nonReentrant
+        returns (uint256 positionId)
+    {
+        return _createPosition(params, baseToken);
+    }
+
+    function _createPosition(
+        CreatePositionParams calldata params,
+        address baseTokenOverride
+    ) private returns (uint256 positionId) {
         if (!allowedQuoteTokens[params.quoteToken]) revert QuoteTokenNotAllowed();
         if (params.owner != msg.sender) revert NotOwner();
         if (params.slippageBps > maxSlippageBps) revert SlippageTooHigh();
@@ -319,13 +348,17 @@ contract DcaManager is
         if (userPositionCount[params.owner] >= maxPositionsPerUser) revert MaxPositionsPerUserExceeded();
         if (activeGlobalPositions >= maxGlobalPositions) revert MaxGlobalPositionsExceeded();
 
+        address baseToken = baseTokenOverride == address(0) ? baseAsset : baseTokenOverride;
+        if (!allowedBaseTokens[baseToken]) revert BaseTokenNotAllowed();
+        uint8 baseDecimals = _ensureBaseTokenDecimals(baseToken);
+
         positionId = ++nextPositionId;
 
         Position storage position = _positions[positionId];
         position.owner = params.owner;
         position.beneficiary = params.beneficiary == address(0) ? params.owner : params.beneficiary;
         position.quoteToken = params.quoteToken;
-        position.baseToken = baseAsset;
+        position.baseToken = baseToken;
         position.amountPerPeriod = params.amountPerPeriod;
         position.priceFloorUsd = params.priceFloorUsd;
         position.priceCapUsd = params.priceCapUsd;
@@ -344,7 +377,7 @@ contract DcaManager is
         position.mevProtection = params.mevProtection;
         position.execNonce = 1;
         position.quoteDecimals = IERC20Metadata(params.quoteToken).decimals();
-        position.baseDecimals = baseAssetDecimals;
+        position.baseDecimals = baseDecimals;
         position.exists = true;
         position.paused = false;
         position.canceled = false;
@@ -712,6 +745,10 @@ contract DcaManager is
         return GlobalPauseState({allPaused: paused()});
     }
 
+    function getAllowedBaseTokens() external view returns (address[] memory) {
+        return _allowedBaseTokenList;
+    }
+
     // -----------------------------------------------------------------------
     // Administration
     // -----------------------------------------------------------------------
@@ -780,6 +817,34 @@ contract DcaManager is
         emit QuoteTokenAllowed(token, allowed);
     }
 
+    function setBaseTokenAllowed(address token, bool allowed) external onlyRole(Roles.DEFAULT_ADMIN) {
+        if (token == address(0)) revert InvalidParameter();
+        if (allowed) {
+            _ensureBaseTokenDecimals(token);
+            if (_baseTokenIndex[token] == 0) {
+                _allowedBaseTokenList.push(token);
+                _baseTokenIndex[token] = _allowedBaseTokenList.length;
+            }
+        } else {
+            if (token == baseAsset) revert InvalidParameter();
+            delete _baseTokenDecimals[token];
+            uint256 indexPlusOne = _baseTokenIndex[token];
+            if (indexPlusOne != 0) {
+                uint256 index = indexPlusOne - 1;
+                uint256 lastIndex = _allowedBaseTokenList.length - 1;
+                if (index != lastIndex) {
+                    address moved = _allowedBaseTokenList[lastIndex];
+                    _allowedBaseTokenList[index] = moved;
+                    _baseTokenIndex[moved] = index + 1;
+                }
+                _allowedBaseTokenList.pop();
+                delete _baseTokenIndex[token];
+            }
+        }
+        allowedBaseTokens[token] = allowed;
+        emit BaseTokenAllowed(token, allowed);
+    }
+
     function reconcileActivePositions(uint256 newCount) external onlyRole(Roles.DEFAULT_ADMIN) {
         // Admin function to fix activeGlobalPositions drift caused by expired positions
         // Should only be used after careful off-chain calculation of actual active positions
@@ -841,6 +906,7 @@ contract DcaManager is
             owner: position.owner,
             beneficiary: position.beneficiary,
             quote: position.quoteToken,
+            base: position.baseToken,
             isBuy: position.isBuy,
             frequency: position.frequency,
             venue: position.venue,
@@ -851,6 +917,15 @@ contract DcaManager is
         });
 
         positionStorage.setPositionMetadata(positionId, metadata);
+    }
+
+    function _ensureBaseTokenDecimals(address token) private returns (uint8) {
+        uint8 decimals = _baseTokenDecimals[token];
+        if (decimals == 0) {
+            decimals = IERC20Metadata(token).decimals();
+            _baseTokenDecimals[token] = decimals;
+        }
+        return decimals;
     }
 
     function _removeOwnerPosition(address owner, uint256 positionId) private {
@@ -907,5 +982,5 @@ contract DcaManager is
 
     function _authorizeUpgrade(address newImplementation) internal override onlyRole(Roles.DEFAULT_ADMIN) {}
 
-    uint256[40] private __gap;
+    uint256[36] private __gap;
 }

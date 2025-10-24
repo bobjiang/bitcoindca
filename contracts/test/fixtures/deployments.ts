@@ -150,6 +150,7 @@ export async function deployBaseSystemFixture() {
   await dcaManager.connect(deployer).setQuoteTokenAllowed(await tokens.usdc.getAddress(), true);
   await dcaManager.connect(deployer).setQuoteTokenAllowed(await tokens.dai.getAddress(), true);
   await dcaManager.connect(deployer).setQuoteTokenAllowed(await tokens.usdt.getAddress(), true);
+  await dcaManager.connect(deployer).setBaseTokenAllowed(await tokens.weth.getAddress(), true);
 
   // Deploy RouterManager
   const RouterManager = await ethers.getContractFactory("RouterManager");
@@ -348,6 +349,7 @@ export async function deployWithPositionFixture() {
   // Create a test position
   const currentTime = Math.floor(Date.now() / 1000);
   const startAt = currentTime + 3600; // 1 hour from now
+  const wbtcAddress = await base.tokens.wbtc.getAddress();
 
   const createParams = {
     owner: base.user1.address,
@@ -422,6 +424,8 @@ export async function deployMultiPositionFixture() {
 
   const currentTime = Math.floor(Date.now() / 1000);
   const positionIds: bigint[] = [];
+  const wbtcAddress = await base.tokens.wbtc.getAddress();
+  const wethAddress = await base.tokens.weth.getAddress();
 
   // Approve tokens for all users
   for (const user of [base.user1, base.user2, base.user3]) {
@@ -434,24 +438,28 @@ export async function deployMultiPositionFixture() {
   const positions = [
     {
       user: base.user1,
+      baseToken: wbtcAddress,
       isBuy: true,
       frequency: 0, // DAILY
       amount: ethers.parseUnits("100", 6),
     },
     {
       user: base.user1,
+      baseToken: wethAddress,
       isBuy: true,
       frequency: 1, // WEEKLY
       amount: ethers.parseUnits("500", 6),
     },
     {
       user: base.user2,
+      baseToken: wbtcAddress,
       isBuy: true,
       frequency: 2, // MONTHLY
       amount: ethers.parseUnits("2000", 6),
     },
     {
       user: base.user3,
+      baseToken: wbtcAddress,
       isBuy: false, // SELL
       frequency: 0, // DAILY
       amount: ethers.parseUnits("0.001", 8), // WBTC
@@ -481,7 +489,7 @@ export async function deployMultiPositionFixture() {
 
     const tx = await base.dcaManager
       .connect(pos.user)
-      .createPosition(createParams);
+      .createPositionWithBase(createParams, pos.baseToken);
 
     const receipt = await tx.wait();
     const event = receipt.logs.find(
@@ -497,15 +505,21 @@ export async function deployMultiPositionFixture() {
       // Deposit funds
       const depositAmount = pos.isBuy
         ? ethers.parseUnits("5000", 6) // USDC
-        : ethers.parseUnits("0.1", 8); // WBTC
+        : pos.baseToken === wbtcAddress
+          ? ethers.parseUnits("0.1", 8)
+          : ethers.parseUnits("0.1", 18);
 
       const depositToken = pos.isBuy
         ? await base.tokens.usdc.getAddress()
-        : await base.tokens.wbtc.getAddress();
+        : pos.baseToken;
 
-      // Approve WBTC if needed
+      // Approve base asset if needed
       if (!pos.isBuy) {
-        await base.tokens.wbtc
+        const baseTokenContract = pos.baseToken === wbtcAddress
+          ? base.tokens.wbtc
+          : base.tokens.weth;
+
+        await baseTokenContract
           .connect(pos.user)
           .approve(await base.dcaManager.getAddress(), ethers.MaxUint256);
       }
