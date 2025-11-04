@@ -39,23 +39,34 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       chainId: 31337,
-      forking: process.env.MAINNET_RPC_URL
-        ? {
-            url: process.env.MAINNET_RPC_URL,
-            blockNumber: process.env.FORK_BLOCK_NUMBER
-              ? parseInt(process.env.FORK_BLOCK_NUMBER)
-              : undefined,
-          }
-        : undefined,
+      // Only enable forking when explicitly requested via ENABLE_FORKING env var
+      // This prevents accidental forking when MAINNET_RPC_URL is set but not needed
+      forking:
+        process.env.ENABLE_FORKING === "true" && process.env.MAINNET_RPC_URL
+          ? {
+              url: process.env.MAINNET_RPC_URL,
+              blockNumber: process.env.FORK_BLOCK_NUMBER
+                ? parseInt(process.env.FORK_BLOCK_NUMBER)
+                : undefined,
+              // Add timeout to prevent indefinite hangs
+              httpHeaders: {},
+            }
+          : undefined,
+      // Add timeout configuration to prevent hanging
+      timeout: 120000, // 2 minutes
+      gas: "auto",
+      gasPrice: "auto",
     },
     localhost: {
       chainId: 31337,
       url: "http://127.0.0.1:8545",
+      timeout: 120000,
     },
     sepolia: {
       chainId: 11155111,
       url: process.env.SEPOLIA_RPC_URL || "",
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      timeout: 120000,
       verify: {
         etherscan: {
           apiKey: process.env.ETHERSCAN_API_KEY,
@@ -66,6 +77,7 @@ const config: HardhatUserConfig = {
       chainId: 1,
       url: process.env.MAINNET_RPC_URL || "",
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      timeout: 120000,
       verify: {
         etherscan: {
           apiKey: process.env.ETHERSCAN_API_KEY,
