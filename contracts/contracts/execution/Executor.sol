@@ -290,7 +290,7 @@ contract Executor is LegacyAccessControl, Pausable, ReentrancyGuard {
     // Fee helpers
     // ---------------------------------------------------------------------
 
-    function calculateFees(uint256 positionId, uint256 notionalUsd) public view returns (uint256 protocolFee, uint256 executionFee) {
+    function calculateFees(uint256 /* positionId */, uint256 notionalUsd) public view returns (uint256 protocolFee, uint256 executionFee) {
         IDcaManager.ProtocolConfig memory config = dcaManager.protocolConfig();
         uint16 feeBps = _feeTier(notionalUsd);
         protocolFee = (notionalUsd * feeBps) / 10_000;
@@ -337,7 +337,7 @@ contract Executor is LegacyAccessControl, Pausable, ReentrancyGuard {
 
         IDcaManager.Position memory position = dcaManager.getPosition(positionId);
 
-        (bool oracleValid, uint256 staleness) = validateOracleStalenessFor(position.baseToken);
+        (bool oracleValid,) = validateOracleStalenessFor(position.baseToken);
         if (!oracleValid) {
             string memory skipReason = "oracle stale";
             emit ExecutionSkipped(positionId, skipReason);
